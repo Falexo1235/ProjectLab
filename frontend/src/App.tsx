@@ -9,6 +9,68 @@ interface Tag {
   name: string
 }
 
+// тестовые данные
+const exampleFiles: FileItem[] = [
+  {
+    id: "1",
+    name: "Презентация.pptx",
+    type: "document",
+    size: "2.4 MB",
+    modifiedDate: "2024-01-15",
+    isFavorite: true,
+    tags: ["работа", "презентация", "проект"],
+  },
+  {
+    id: "2",
+    name: "Фото.jpg",
+    type: "image",
+    size: "5.2 MB",
+    modifiedDate: "2024-01-10",
+    isFavorite: false,
+    tags: ["отпуск", "фото", "личное"],
+    thumbnail: "/src/assets/example/previews/vacation-photo.jpg",
+  },
+  {
+    id: "3",
+    name: "Видео.mp4",
+    type: "video",
+    size: "45.8 MB",
+    modifiedDate: "2024-01-08",
+    isFavorite: true,
+    tags: ["обучение", "видео"],
+    thumbnail: "/src/assets/example/previews/video-lesson.jpg",
+  },
+  {
+    id: "4",
+    name: "Архив.zip",
+    type: "archive",
+    size: "12.1 MB",
+    modifiedDate: "2024-01-05",
+    isFavorite: false,
+    tags: ["архив", "документы"],
+  },
+  {
+    id: "5",
+    name: "Музыка.mp3",
+    type: "audio",
+    size: "8.7 MB",
+    modifiedDate: "2024-01-03",
+    isFavorite: false,
+    tags: ["музыка", "аудио"],
+    thumbnail: "/src/assets/example/previews/music.jpg",
+  },
+  {
+    id: "6",
+    name: "Документ.pdf",
+    type: "document",
+    size: "1.8 MB",
+    modifiedDate: "2024-01-01",
+    isFavorite: true,
+    tags: ["работа", "отчет"],
+    thumbnail: "/src/assets/example/previews/report.jpg",
+  },
+]
+
 const exampleTags: Tag[] = [
   { id: "1", name: "работа" },
   { id: "2", name: "личное" },
@@ -26,6 +88,7 @@ const exampleTags: Tag[] = [
 ]
 
 function App() {
+  const [files, setFiles] = useState<FileItem[]>(exampleFiles)
   const [searchQuery, setSearchQuery] = useState("")
   const [showFavorites, setShowFavorites] = useState(false)
   const [fileType, setFileType] = useState("all")
@@ -104,7 +167,15 @@ function App() {
             </div>
             <div className="favorites-container">
               <label className="favorites-label">
-                <input type="checkbox" checked={showFavorites} onChange={(e) => setShowFavorites(e.target.checked)} />⭐
+                <input type="checkbox" checked={showFavorites} onChange={(e) => setShowFavorites(e.target.checked)} />
+                <img
+                  src="/src/assets/icons/star1.png"
+                  alt="Избранные"
+                  className="favorites-star-icon"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg?height=16&width=16"
+                  }}
+                />
                 Избранные
               </label>
             </div>
@@ -214,6 +285,12 @@ function App() {
           )}
         </div>
       </div>
+      <FileGrid
+          files={files}
+          onFileClick={(file) => console.log("Clicked file:", file)}
+          onToggleFavorite={handleToggleFavorite}
+          emptyMessage="Файлы не найдены"
+        />
     </div>
   )
 }

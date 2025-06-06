@@ -123,6 +123,11 @@
   background-color: var(--bg-tertiary);
 }
 
+.favorites-star-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .separator {
   height: 1px;
   background-color: var(--border-primary);
