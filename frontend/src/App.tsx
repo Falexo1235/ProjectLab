@@ -1,5 +1,29 @@
-import { useState } from 'react'
-import './App.css'
+"use client"
+
+import { useState } from "react"
+import { FileGrid, type FileItem } from "./components/FileGrid"
+import "./App.css"
+
+interface Tag {
+  id: string
+  name: string
+}
+
+const exampleTags: Tag[] = [
+  { id: "1", name: "работа" },
+  { id: "2", name: "личное" },
+  { id: "3", name: "фото" },
+  { id: "4", name: "видео" },
+  { id: "5", name: "документы" },
+  { id: "6", name: "проект" },
+  { id: "7", name: "презентация" },
+  { id: "8", name: "отпуск" },
+  { id: "9", name: "обучение" },
+  { id: "10", name: "архив" },
+  { id: "11", name: "музыка" },
+  { id: "12", name: "аудио" },
+  { id: "13", name: "отчет" },
+]
 
 function App() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -8,6 +32,37 @@ function App() {
   const [dateFilter, setDateFilter] = useState("all")
   const [sortBy, setSortBy] = useState("name")
   const [tagSearch, setTagSearch] = useState("")
+  const [includedTags, setIncludedTags] = useState<string[]>([])
+  const [excludedTags, setExcludedTags] = useState<string[]>([])
+
+  const filteredTags = exampleTags.filter(
+    (tag) =>
+      tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+      !includedTags.includes(tag.name) &&
+      !excludedTags.includes(tag.name),
+  )
+
+  const addIncludedTag = (tagName: string) => {
+    setIncludedTags([...includedTags, tagName])
+  }
+
+  const addExcludedTag = (tagName: string) => {
+    setExcludedTags([...excludedTags, tagName])
+  }
+
+  const removeIncludedTag = (tagName: string) => {
+    setIncludedTags(includedTags.filter((tag) => tag !== tagName))
+  }
+
+  const removeExcludedTag = (tagName: string) => {
+    setExcludedTags(excludedTags.filter((tag) => tag !== tagName))
+  }
+
+  const handleToggleFavorite = (fileId: string) => {
+    setFiles((prevFiles) =>
+      prevFiles.map((file) => (file.id === fileId ? { ...file, isFavorite: !file.isFavorite } : file)),
+    )
+  }
 
   const handleUploadClick = () => {
     console.log("Загрузка файла")
@@ -27,6 +82,9 @@ function App() {
                 src="/src/assets/icons/upload.png"
                 alt="Upload"
                 className="upload-icon"
+                onError={(e) => {
+                  e.currentTarget.src = "/placeholder.svg?height=18&width=18"
+                }}
               />
               <span className="upload-text">Загрузить</span>
             </button>
@@ -99,6 +157,61 @@ function App() {
               />
             </div>
           </div>
+
+          {tagSearch && filteredTags.length > 0 && (
+            <div className="tags-found">
+              <div className="tags-found-title">Найденные теги:</div>
+              <div className="tags-found-list">
+                {filteredTags.map((tag) => (
+                  <div key={tag.id} className="tag-item">
+                    <span className="tag-name" onClick={() => addIncludedTag(tag.name)}>
+                      {tag.name}
+                    </span>
+                    <button className="tag-button tag-button-add" onClick={() => addIncludedTag(tag.name)}>
+                      +
+                    </button>
+                    <button className="tag-button tag-button-exclude" onClick={() => addExcludedTag(tag.name)}>
+                      -
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {(includedTags.length > 0 || excludedTags.length > 0) && (
+            <div className="active-tags">
+              {includedTags.length > 0 && (
+                <div className="active-tags-section">
+                  <div className="active-tags-title active-tags-title-included">Включенные теги:</div>
+                  <div className="active-tags-list">
+                    {includedTags.map((tag) => (
+                      <span key={tag} className="active-tag active-tag-included">
+                        {tag}
+                        <button className="active-tag-remove" onClick={() => removeIncludedTag(tag)}>
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {excludedTags.length > 0 && (
+                <div className="active-tags-section">
+                  <div className="active-tags-title active-tags-title-excluded">Исключенные теги:</div>
+                  <div className="active-tags-list">
+                    {excludedTags.map((tag) => (
+                      <span key={tag} className="active-tag active-tag-excluded">
+                        {tag}
+                        <button className="active-tag-remove" onClick={() => removeExcludedTag(tag)}>
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
