@@ -12,6 +12,8 @@
 .file-grid-empty-icon {
   font-size: 4rem;
   margin-bottom: 16px;
+  width: 120px;
+  height: 120px;
   color: var(--text-tertiary);
 }
 
