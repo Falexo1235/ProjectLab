@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { FileGrid, type FileItem } from "./components/FileGrid"
 import "./App.css"
@@ -66,7 +64,7 @@ const exampleFiles: FileItem[] = [
     size: "1.8 MB",
     modifiedDate: "2024-01-01",
     isFavorite: true,
-    tags: ["работа", "отчет"],
+    tags: ["работа", "отчёт"],
     thumbnail: "/src/assets/example/previews/report.jpg",
   },
 ]
@@ -84,7 +82,7 @@ const exampleTags: Tag[] = [
   { id: "10", name: "архив" },
   { id: "11", name: "музыка" },
   { id: "12", name: "аудио" },
-  { id: "13", name: "отчет" },
+  { id: "13", name: "отчёт" },
 ]
 
 function App() {
