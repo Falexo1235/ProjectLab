@@ -1,12 +1,13 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import ReactPlayer from "react-player"
+import ImageViewer from "../components/ImageViewer"
 import "./FileViewer.css"
 
 interface FileData {
   id: string
   name: string
-  type: "image" | "video" | "audio" | "document" | "archive" | "other"
+  type: "image" | "video" | "audio" | "document" | "archive" | "other" | "pdf"
   size: string
   modifiedDate: string
   isFavorite: boolean
@@ -22,7 +23,7 @@ interface FileData {
 }
 
 //тестовые данные
-//пока что все данные о файлах статичные, 
+//пока что все данные о файлах статичные, возможно их будем получать через бэкенд
 const exampleFileData: Record<string, FileData> = {
   "1": {
     id: "1",
@@ -51,7 +52,7 @@ const exampleFileData: Record<string, FileData> = {
   },
   "3": {
     id: "3",
-    name: "Видео урок.mp4",
+    name: "Видео.mp4",
     type: "video",
     size: "45.8 MB",
     modifiedDate: "2024-01-08",
@@ -93,7 +94,7 @@ const exampleFileData: Record<string, FileData> = {
   "6": {
     id: "6",
     name: "Документ.pdf",
-    type: "document",
+    type: "pdf",
     size: "1.8 MB",
     modifiedDate: "2024-01-01",
     isFavorite: true,
@@ -159,7 +160,9 @@ export default function FileViewer() {
     setShowNotification(true)
   }
 
-
+  const handleFullscreenClose = () => {
+    setIsFullscreen(false)
+  }
 
   const handleDownload = () => {
     const link = document.createElement("a")
@@ -212,7 +215,16 @@ export default function FileViewer() {
             <ReactPlayer url={file.url} controls width="100%" height="60px" />
           </div>
         )
-
+      case "pdf": 
+        return (
+          <div className="audio-viewer">
+            <div className="audio-placeholder">
+              
+              <h3>{file.name}</h3>
+            </div>
+              <div/>
+          </div>
+        )
       default:
         return (
           <div className="unsupported-viewer">
@@ -334,19 +346,16 @@ export default function FileViewer() {
         </div>
       </div>
       {isFullscreen && file.type === "image" && (
-        <div className="fullscreen-overlay" onClick={() => setIsFullscreen(false)}>
+        <div className="fullscreen-overlay" onClick={handleFullscreenClose}>
+          <button className="fullscreen-close" onClick={handleFullscreenClose}>
+            X
+          </button>
           <div className="fullscreen-content">
-            <img
+            <ImageViewer
               src={file.url || "/placeholder.svg"}
               alt={file.name}
-              className="fullscreen-image"
-              onError={(e) => {
-                e.currentTarget.src = "/placeholder.svg?height=800&width=1200"
-              }}
+              onClose={handleFullscreenClose}
             />
-            <button className="fullscreen-close" onClick={() => setIsFullscreen(false)}>
-              ×
-            </button>
           </div>
         </div>
       )}
