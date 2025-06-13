@@ -1,5 +1,3 @@
-"use client"
-
 import { FileCard, type FileItem } from "./FileCard"
 import "./FileGrid.css"
 
