@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import ReactPlayer from "react-player"
 import ImageViewer from "../components/ImageViewer"
 import "./FileViewer.css"
+import PDFViewer from "../components/PDFViewer"
 
 interface FileData {
   id: string
@@ -13,6 +14,7 @@ interface FileData {
   isFavorite: boolean
   tags: string[]
   url: string
+  preview?: string
   metadata?: {
     duration?: string
     resolution?: string
@@ -85,6 +87,7 @@ const exampleFileData: Record<string, FileData> = {
     isFavorite: false,
     tags: ["музыка", "аудио"],
     url: "/src/assets/example/files/music.mp3",
+    preview:"/src/assets/example/previews/music.jpg",
     metadata: {
       duration: "3:45",
       bitrate: "320 kbps",
@@ -203,7 +206,7 @@ export default function FileViewer() {
           <div className="audio-viewer">
             <div className="audio-placeholder">
               <img
-                src="/src/assets/icons/audio.png"
+                src={file.preview}
                 alt="Audio"
                 className="audio-icon"
                 onError={(e) => {
@@ -217,12 +220,8 @@ export default function FileViewer() {
         )
       case "pdf": 
         return (
-          <div className="audio-viewer">
-            <div className="audio-placeholder">
-              
-              <h3>{file.name}</h3>
-            </div>
-              <div/>
+          <div className="pdf-viewer">
+            <PDFViewer src={file.url} fileName={file.name} onDownload={handleDownload} />
           </div>
         )
       default:

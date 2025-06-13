@@ -200,7 +200,6 @@
 .audio-icon {
   width: 120px;
   height: 120px;
-  opacity: 0.7;
 }
 
 .audio-placeholder h3 {
@@ -219,7 +218,6 @@
 .file-icon {
   width: 120px;
   height: 120px;
-  opacity: 0.5;
 }
 
 .unsupported-viewer h3 {

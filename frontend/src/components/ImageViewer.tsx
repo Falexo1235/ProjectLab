@@ -44,7 +44,7 @@ export default function ImageViewer({ src, alt, onClose }: ImageViewerProps) {
     const scaleX = containerWidth / imageDimensions.width
     const scaleY = containerHeight / imageDimensions.height
 
-    return Math.min(scaleX, scaleY, 1)
+    return Math.min(scaleX, scaleY)
   }, [imageDimensions])
 
   const updateContainerDimensions = useCallback(() => {
