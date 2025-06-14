@@ -27,7 +27,7 @@ const exampleFiles: FileItem[] = [
     modifiedDate: "2024-01-10",
     isFavorite: false,
     tags: ["отпуск", "фото", "личное"],
-    thumbnail: "/src/assets/example/previews/vacation-photo.jpg",
+    thumbnail: "/src/assets/example/previews/photo.jpg",
   },
   {
     id: "3",
@@ -37,7 +37,7 @@ const exampleFiles: FileItem[] = [
     modifiedDate: "2024-01-08",
     isFavorite: true,
     tags: ["обучение", "видео"],
-    thumbnail: "/src/assets/example/previews/video-lesson.jpg",
+    thumbnail: "/src/assets/example/previews/video.jpg",
   },
   {
     id: "4",
@@ -77,6 +77,16 @@ const exampleFiles: FileItem[] = [
     isFavorite: true,
     tags: ["фото", "видео"],
     thumbnail: "/src/assets/example/previews/gif-file.png",
+  },
+  {
+    id: "8",
+    name: "Видео2.mp4",
+    type: "video",
+    size: "45.8 MB",
+    modifiedDate: "2024-01-08",
+    isFavorite: true,
+    tags: ["обучение", "видео"],
+    thumbnail: "/src/assets/example/previews/video2.jpg",
   },
 ]
 

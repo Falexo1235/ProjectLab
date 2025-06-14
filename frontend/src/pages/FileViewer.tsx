@@ -29,7 +29,7 @@ interface FileData {
 const exampleFileData: Record<string, FileData> = {
   "1": {
     id: "1",
-    name: "Презентация проекта.pptx",
+    name: "Презентация.pptx",
     type: "document",
     size: "2.4 MB",
     modifiedDate: "2024-01-15",
@@ -39,32 +39,30 @@ const exampleFileData: Record<string, FileData> = {
   },
   "2": {
     id: "2",
-    name: "Фото отпуска.jpg",
+    name: "Фото.jpg",
     type: "image",
-    size: "5.2 MB",
+    size: "400 KB",
     modifiedDate: "2024-01-10",
     isFavorite: false,
     tags: ["отпуск", "фото", "личное"],
-    url: "/src/assets/example/files/vacation-photo.jpg",
+    url: "/src/assets/example/files/photo.jpg",
     metadata: {
-      resolution: "4K",
-      dimensions: { width: 3840, height: 2160 },
-      format: "JPEG",
+      dimensions: { width: 1920, height: 1920 },
+      format: "JPG",
     },
   },
   "3": {
     id: "3",
     name: "Видео.mp4",
     type: "video",
-    size: "45.8 MB",
+    size: "1.06 MB",
     modifiedDate: "2024-01-08",
     isFavorite: true,
     tags: ["обучение", "видео"],
-    url: "/src/assets/example/files/video-lesson.mp4",
+    url: "/src/assets/example/files/video.mp4",
     metadata: {
-      duration: "5:32",
-      resolution: "1080p",
-      dimensions: { width: 1920, height: 1080 },
+      duration: "00:00:15",
+      dimensions: { width: 842, height: 480 },
       format: "MP4",
     },
   },
@@ -82,15 +80,15 @@ const exampleFileData: Record<string, FileData> = {
     id: "5",
     name: "Музыка.mp3",
     type: "audio",
-    size: "8.7 MB",
+    size: "7.59 MB",
     modifiedDate: "2024-01-03",
     isFavorite: false,
     tags: ["музыка", "аудио"],
     url: "/src/assets/example/files/music.mp3",
     preview:"/src/assets/example/previews/music.jpg",
     metadata: {
-      duration: "3:45",
-      bitrate: "320 kbps",
+      duration: "5:32",
+      bitrate: "192 kbps",
       format: "MP3",
     },
   },
@@ -113,7 +111,26 @@ const exampleFileData: Record<string, FileData> = {
     isFavorite: true,
     tags: ["фото", "видео"],
     url: "/src/assets/example/files/gif-file.gif",
+    metadata: {
+      dimensions: { width: 640, height: 480 },
+      format: "GIF",
+    },
   },
+    "8": {
+    id: "8",
+    name: "Видео.mp4",
+    type: "video",
+    size: "1.06 MB",
+    modifiedDate: "2024-01-08",
+    isFavorite: true,
+    tags: ["обучение", "видео"],
+    url: "/src/assets/example/files/video2.mp4",
+    metadata: {
+      duration: "00:00:15",
+      dimensions: { width: 360, height: 656 },
+      format: "MP4",
+    },
+  }
 }
 
 export default function FileViewer() {
@@ -190,14 +207,14 @@ export default function FileViewer() {
                 e.currentTarget.src = "/placeholder.svg?height=400&width=600"
               }}
             />
-            <p className="image-hint">Нажмите на изображение для полноэкранного просмотра</p>
           </div>
         )
 
       case "video":
+        const isVertical = file.metadata?.dimensions?.height > file.metadata?.dimensions?.width;
         return (
           <div className="video-viewer">
-            <ReactPlayer url={file.url} controls width="100%" height="auto" style={{ maxHeight: "70vh" }} />
+            <ReactPlayer url={file.url} controls width={isVertical ? "auto" : "100%"}  style={{ maxHeight: "70vh" }} height={isVertical ? "100%" : "auto"}/>
           </div>
         )
 
