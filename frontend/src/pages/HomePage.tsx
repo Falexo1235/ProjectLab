@@ -76,7 +76,7 @@ const exampleFiles: FileItem[] = [
     modifiedDate: "2024-01-01",
     isFavorite: true,
     tags: ["фото", "видео"],
-    thumbnail: "/src/assets/example/previews/gif-file.png",
+    thumbnail: "/src/assets/example/files/gif-file.gif",
   },
   {
     id: "8",
@@ -87,6 +87,37 @@ const exampleFiles: FileItem[] = [
     isFavorite: true,
     tags: ["обучение", "видео"],
     thumbnail: "/src/assets/example/previews/video2.jpg",
+  },
+  {
+    id: "9",
+    name: "example.py",
+    type: "document",
+    size: "45.8 MB",
+    modifiedDate: "2024-01-08",
+    isFavorite: true,
+    tags: ["документы"],
+    thumbnail: "/src/assets/example/previews/text.jpg",
+  },
+  {
+    id: "10",
+    name: "Вектор.svg",
+    type: "image",
+    size: "5.2 MB",
+    modifiedDate: "2024-01-10",
+    isFavorite: false,
+    tags: ["фото"],
+    thumbnail: "/src/assets/example/previews/vector.jpg",
+
+  },
+  {
+    id: "11",
+    name: "Пиксель-арт.webp",
+    type: "image",
+    size: "5.2 MB",
+    modifiedDate: "2024-01-10",
+    isFavorite: false,
+    tags: ["фото"],
+    thumbnail: "/src/assets/example/files/pixels.webp",
   },
 ]
 

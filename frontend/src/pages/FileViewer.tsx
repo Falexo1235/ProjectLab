@@ -3,12 +3,25 @@ import { useParams, useNavigate } from "react-router-dom"
 import ReactPlayer from "react-player"
 import ImageViewer from "../components/ImageViewer"
 import "./FileViewer.css"
+import TextEditor from "../components/TextEditor"
 import PDFViewer from "../components/PDFViewer"
+
+type FileType = 
+  | "image" 
+  | "video" 
+  | "audio" 
+  | "document" 
+  | "presentation" 
+  | "spreadsheet" 
+  | "pdf" 
+  | "text" 
+  | "archive" 
+  | "other"
 
 interface FileData {
   id: string
   name: string
-  type: "image" | "video" | "audio" | "document" | "archive" | "other" | "pdf"
+  mime: string
   size: string
   modifiedDate: string
   isFavorite: boolean
@@ -24,13 +37,47 @@ interface FileData {
   }
 }
 
+const getFileType = (mime: string) : FileType => {
+  const [type,subtype] = mime.split("/")
+  switch (type){
+    case "image":
+      return "image"
+    case "video":
+      return "video"
+    case "audio":
+      return "audio"
+    case "text":
+      return "text"
+    case "application":
+      {
+        if ([
+          "msword", 
+          "vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ].includes(subtype)) return "document"
+
+        if ([
+          "vnd.ms-powerpoint",
+          "vnd.openxmlformats-officedocument.presentationml.presentation"
+        ].includes(subtype)) return "presentation"
+
+        if ([
+          "vnd.ms-excel",
+          "vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ].includes(subtype)) return "spreadsheet"
+
+        if (subtype === "pdf") return "pdf"
+      }
+    default:
+      return "other"
+  }
+}
 //тестовые данные
 //пока что все данные о файлах статичные, возможно их будем получать через бэкенд
 const exampleFileData: Record<string, FileData> = {
   "1": {
     id: "1",
     name: "Презентация.pptx",
-    type: "document",
+    mime: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     size: "2.4 MB",
     modifiedDate: "2024-01-15",
     isFavorite: true,
@@ -40,7 +87,7 @@ const exampleFileData: Record<string, FileData> = {
   "2": {
     id: "2",
     name: "Фото.jpg",
-    type: "image",
+    mime: "image/jpg",
     size: "400 KB",
     modifiedDate: "2024-01-10",
     isFavorite: false,
@@ -54,7 +101,7 @@ const exampleFileData: Record<string, FileData> = {
   "3": {
     id: "3",
     name: "Видео.mp4",
-    type: "video",
+    mime: "video/mpeg",
     size: "1.06 MB",
     modifiedDate: "2024-01-08",
     isFavorite: true,
@@ -69,7 +116,7 @@ const exampleFileData: Record<string, FileData> = {
   "4": {
     id: "4",
     name: "Документы.zip",
-    type: "archive",
+    mime: "application/zip",
     size: "12.1 MB",
     modifiedDate: "2024-01-05",
     isFavorite: false,
@@ -79,7 +126,7 @@ const exampleFileData: Record<string, FileData> = {
   "5": {
     id: "5",
     name: "Музыка.mp3",
-    type: "audio",
+    mime: "audio/mp3",
     size: "7.59 MB",
     modifiedDate: "2024-01-03",
     isFavorite: false,
@@ -95,7 +142,7 @@ const exampleFileData: Record<string, FileData> = {
   "6": {
     id: "6",
     name: "Документ.pdf",
-    type: "pdf",
+    mime: "application/pdf",
     size: "1.8 MB",
     modifiedDate: "2024-01-01",
     isFavorite: true,
@@ -105,7 +152,7 @@ const exampleFileData: Record<string, FileData> = {
     "7": {
     id: "7",
     name: "Гифка.gif",
-    type: "image",
+    mime: "image/gif",
     size: "1.8 MB",
     modifiedDate: "2024-01-01",
     isFavorite: true,
@@ -118,8 +165,8 @@ const exampleFileData: Record<string, FileData> = {
   },
     "8": {
     id: "8",
-    name: "Видео.mp4",
-    type: "video",
+    name: "Видео2.mp4",
+    mime: "video/mpeg",
     size: "1.06 MB",
     modifiedDate: "2024-01-08",
     isFavorite: true,
@@ -129,6 +176,45 @@ const exampleFileData: Record<string, FileData> = {
       duration: "00:00:15",
       dimensions: { width: 360, height: 656 },
       format: "MP4",
+    },
+    
+  },
+  "9": {
+    id: "9",
+    name: "example.py",
+    mime: "text/plain",
+    size: "4 KB",
+    modifiedDate: "2024-01-20",
+    isFavorite: false,
+    tags: ["документ", "текст"],
+    url: "/src/assets/example/files/example.py",
+  },
+  "10": {
+    id: "10",
+    name: "Вектор.svg",
+    mime: "image/svg+xml",
+    size: "1.8 MB",
+    modifiedDate: "2024-01-01",
+    isFavorite: true,
+    tags: ["фото"],
+    url: "/src/assets/example/files/image.svg",
+    metadata: {
+      dimensions: {width: 150, height: 150},
+      format: "SVG",
+    },
+  },
+    "11": {
+    id: "11",
+    name: "Пиксель-арт.webp",
+    mime: "image/webp",
+    size: "452 B",
+    modifiedDate: "2024-01-10",
+    isFavorite: false,
+    tags: ["фото"],
+    url: "/src/assets/example/files/pixels.webp",
+    metadata: {
+      dimensions: { width: 48, height: 64 },
+      format: "WEBP",
     },
   }
 }
@@ -173,7 +259,7 @@ export default function FileViewer() {
       </div>
     )
   }
-
+  const type = getFileType(file.mime)
   const handleShare = async () => {
     const url = window.location.href
     navigator.clipboard.writeText(url)
@@ -194,7 +280,7 @@ export default function FileViewer() {
   }
 
   const renderFileContent = () => {
-    switch (file.type) {
+    switch (type) {
       case "image":
         return (
           <div className="image-viewer">
@@ -239,6 +325,16 @@ export default function FileViewer() {
         return (
           <div className="pdf-viewer">
             <PDFViewer src={file.url} fileName={file.name} onDownload={handleDownload} />
+          </div>
+        )
+      case "text":
+        return(
+          <div className="text-viewer">
+            <TextEditor 
+              fileUrl={file.url}
+              fileName={file.name}
+              onSave={console.log("save")}
+            />
           </div>
         )
       default:
@@ -361,7 +457,7 @@ export default function FileViewer() {
           </div>
         </div>
       </div>
-      {isFullscreen && file.type === "image" && (
+      {isFullscreen && type === "image" && (
         <div className="fullscreen-overlay" onClick={handleFullscreenClose}>
           <button className="fullscreen-close" onClick={handleFullscreenClose}>
             X

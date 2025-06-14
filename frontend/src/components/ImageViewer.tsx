@@ -30,8 +30,8 @@ export default function ImageViewer({ src, alt, onClose }: ImageViewerProps) {
   const moveContainerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
 
-  const MIN_SCALE = 0.1
-  const MAX_SCALE = 5
+  const MIN_SCALE = 0.01
+  const MAX_SCALE = 10
   const ZOOM_STEP = 0.2
 
   const calculateInitialScale = useCallback(() => {
@@ -44,7 +44,7 @@ export default function ImageViewer({ src, alt, onClose }: ImageViewerProps) {
     const scaleX = containerWidth / imageDimensions.width
     const scaleY = containerHeight / imageDimensions.height
 
-    return Math.min(scaleX, scaleY)
+    return Math.min(scaleX, scaleY, 1)
   }, [imageDimensions])
 
   const updateContainerDimensions = useCallback(() => {
@@ -338,6 +338,8 @@ export default function ImageViewer({ src, alt, onClose }: ImageViewerProps) {
           className="image-viewer-scale-container"
           style={{
             transform: `scale(${transform.scale})`,
+            width: `${imageDimensions.width}px`,
+            height: `${imageDimensions.height}px`,
           }}
         >
           <img

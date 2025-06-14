@@ -346,3 +346,7 @@
     gap: 12px;
   }
 }
+
+.file-thumbnail {
+  image-rendering: pixelated;
+}

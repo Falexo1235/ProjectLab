@@ -1,0 +1,43 @@
+.text-editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.text-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.text-editor-content {
+  width: 100%;
+}
+
+.save-button {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.save-button:hover {
+  background: var(--accent-hover);
+}
+
+.text-loading {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-secondary);
+}
+
+.text-editor-area {
+    outline: none;
+}
