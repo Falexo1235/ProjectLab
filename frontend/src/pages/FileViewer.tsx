@@ -242,6 +242,10 @@ export default function FileViewer() {
   const [file, setFile] = useState(exampleFileData[id ?? "1"])
   const isAuthorized = true // Placeholder for admin state
 
+  const getStarIcon = (isFavorite: boolean): string => {
+    return isFavorite ? "/src/assets/icons/star1.png" : "/src/assets/icons/star2.png"
+  }
+
   useEffect(() => {
     if (showNotification) {
       const timer = setTimeout(() => {
@@ -250,6 +254,13 @@ export default function FileViewer() {
       return () => clearTimeout(timer)
     }
   }, [showNotification])
+
+  const handleToggleFavorite = () => {
+    setFile((prevFile) => ({
+      ...prevFile,
+      isFavorite: !prevFile.isFavorite,
+    }))
+  }
 
   const handleAccessLevelChange = () => {
     setFile((prevFile) => ({
@@ -440,7 +451,21 @@ export default function FileViewer() {
         <div className="file-content">{renderFileContent()}</div>
         <div className="file-info-panel">
           <div className="file-details">
-            <h2 className="file-title">{file.name}</h2>
+            <div className="file-title-container">
+              <h2 className="file-title">{file.name}</h2>
+              {isAuthorized && (
+                <button className="viewer-favorite-button" onClick={handleToggleFavorite}>
+                  <img
+                    src={getStarIcon(file.isFavorite)}
+                    alt="Favorite"
+                    className="viewer-star-icon"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg?height=24&width=24"
+                    }}
+                  />
+                </button>
+              )}
+            </div>
             <div className="file-meta">
               <span className="file-size">{file.size}</span>
               <span className="file-date">Изменен: {new Date(file.modifiedDate).toLocaleDateString("ru-RU")}</span>
