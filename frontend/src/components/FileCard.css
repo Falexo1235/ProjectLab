@@ -78,6 +78,78 @@
   min-width: 0;
 }
 
+.file-actions-menu {
+  position: relative;
+}
+
+.menu-toggle-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-secondary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.menu-toggle-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.context-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow);
+  z-index: 10;
+  width: max-content;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.context-menu button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--text-primary);
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.context-menu button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.context-menu .delete-button {
+  color: var(--tag-excluded-text);
+}
+
+.context-menu .delete-button:hover {
+  color: var(--tag-excluded-text);
+  background-color: var(--tag-excluded-bg);
+}
+
+.menu-separator {
+  height: 1px;
+  background-color: var(--border-primary);
+  margin: 4px 0;
+}
+
 .file-favorite-button {
   position: absolute;
   top: 8px;

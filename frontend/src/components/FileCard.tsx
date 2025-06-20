@@ -1,4 +1,4 @@
-import type React from "react"
+import { useState, useRef, useEffect, type MouseEvent } from "react"
 import "./FileCard.css"
 
 export interface FileItem {
@@ -10,6 +10,7 @@ export interface FileItem {
   isFavorite: boolean
   tags: string[]
   thumbnail?: string
+  url?: string
   accessLevel?: "public" | "private"
   isEditable?: boolean
 }
@@ -18,9 +19,26 @@ interface FileCardProps {
   file: FileItem
   onClick?: (file: FileItem) => void
   onToggleFavorite?: (fileId: string) => void
+  onShare?: (fileId: string) => void
+  onDownload?: (fileId: string) => void
+  onCopyDownloadLink?: (fileId: string) => void
+  onDelete?: (fileId: string) => void
+  onAccessLevelChange?: (fileId: string, newLevel: "public" | "private") => void
 }
 
-export function FileCard({ file, onClick, onToggleFavorite }: FileCardProps) {
+export function FileCard({
+  file,
+  onClick,
+  onToggleFavorite,
+  onShare,
+  onDownload,
+  onCopyDownloadLink,
+  onDelete,
+  onAccessLevelChange,
+}: FileCardProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
   const getFileTypeIcon = (type: string): string => {
     switch (type) {
       case "image":
@@ -56,6 +74,54 @@ export function FileCard({ file, onClick, onToggleFavorite }: FileCardProps) {
   const handleCardClick = () => {
     onClick?.(file)
   }
+
+  const handleMenuToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsMenuOpen((prev) => !prev)
+  }
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onShare?.(file.id)
+    setIsMenuOpen(false)
+  }
+
+  const handleDownloadClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDownload?.(file.id)
+    setIsMenuOpen(false)
+  }
+
+  const handleCopyDownloadLinkClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onCopyDownloadLink?.(file.id)
+    setIsMenuOpen(false)
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDelete?.(file.id)
+    setIsMenuOpen(false)
+  }
+
+  const handleAccessChangeClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newLevel = file.accessLevel === "public" ? "private" : "public"
+    onAccessLevelChange?.(file.id, newLevel)
+    setIsMenuOpen(false)
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: globalThis.MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [menuRef])
 
   return (
     <div className="file-card" onClick={handleCardClick}>
@@ -100,6 +166,25 @@ export function FileCard({ file, onClick, onToggleFavorite }: FileCardProps) {
           <h3 className="file-name" title={file.name}>
             {file.name}
           </h3>
+          <div className="file-actions-menu" ref={menuRef}>
+            <button className="menu-toggle-button" onClick={handleMenuToggle}>
+              •••
+            </button>
+            {isMenuOpen && (
+              <div className="context-menu">
+                <button onClick={handleDownloadClick}>Скачать</button>
+                <button onClick={handleShareClick}>Поделиться</button>
+                <button onClick={handleCopyDownloadLinkClick}>Ссылка для скачивания</button>
+                <button onClick={handleAccessChangeClick}>
+                  {file.accessLevel === "public" ? "Сделать приватным" : "Сделать публичным"}
+                </button>
+                <div className="menu-separator"></div>
+                <button onClick={handleDeleteClick} className="delete-button">
+                  Удалить
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="file-meta">

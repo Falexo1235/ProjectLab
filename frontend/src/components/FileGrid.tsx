@@ -5,10 +5,25 @@ interface FileGridProps {
   files: FileItem[]
   onFileClick: (file: FileItem) => void
   onToggleFavorite: (fileId: string) => void
+  onShare?: (fileId: string) => void
+  onDownload?: (fileId: string) => void
+  onCopyDownloadLink?: (fileId: string) => void
+  onDelete?: (fileId: string) => void
+  onAccessLevelChange?: (fileId: string, newLevel: "public" | "private") => void
   emptyMessage?: string
 }
 
-export function FileGrid({ files, onFileClick, onToggleFavorite, emptyMessage = "Файлы не найдены" }: FileGridProps) {
+export function FileGrid({
+  files,
+  onFileClick,
+  onToggleFavorite,
+  onShare,
+  onDownload,
+  onCopyDownloadLink,
+  onDelete,
+  onAccessLevelChange,
+  emptyMessage = "Файлы не найдены",
+}: FileGridProps) {
   if (files.length === 0) {
     return (
       <div className="file-grid-empty">
@@ -33,6 +48,11 @@ export function FileGrid({ files, onFileClick, onToggleFavorite, emptyMessage = 
           file={file}
           onClick={() => onFileClick(file)}
           onToggleFavorite={() => onToggleFavorite(file.id)}
+          onShare={onShare}
+          onDownload={onDownload}
+          onCopyDownloadLink={onCopyDownloadLink}
+          onDelete={onDelete}
+          onAccessLevelChange={onAccessLevelChange}
         />
       ))}
     </div>

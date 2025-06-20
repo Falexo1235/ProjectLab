@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { FileGrid, type FileItem } from "../components/FileGrid"
 import "../App.css"
@@ -19,6 +19,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: true,
     tags: ["работа", "презентация", "проект"],
     accessLevel: "private",
+    url: "/src/assets/example/files/presentation.pptx",
   },
   {
     id: "2",
@@ -30,6 +31,7 @@ const exampleFiles: FileItem[] = [
     tags: ["отпуск", "фото", "личное"],
     thumbnail: "/src/assets/example/previews/photo.jpg",
     accessLevel: "public",
+    url: "/src/assets/example/files/photo.jpg",
   },
   {
     id: "3",
@@ -41,6 +43,7 @@ const exampleFiles: FileItem[] = [
     tags: ["обучение", "видео"],
     thumbnail: "/src/assets/example/previews/video.jpg",
     accessLevel: "private",
+    url: "/src/assets/example/files/video.mp4",
   },
   {
     id: "4",
@@ -51,6 +54,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: false,
     tags: ["архив", "документы"],
     accessLevel: "private",
+    url: "/src/assets/example/files/documents.zip",
   },
   {
     id: "5",
@@ -62,6 +66,7 @@ const exampleFiles: FileItem[] = [
     tags: ["музыка", "аудио"],
     thumbnail: "/src/assets/example/previews/music.jpg",
     accessLevel: "public",
+    url: "/src/assets/example/files/music.mp3",
   },
   {
     id: "6",
@@ -73,6 +78,7 @@ const exampleFiles: FileItem[] = [
     tags: ["работа", "отчёт"],
     thumbnail: "/src/assets/example/previews/report.jpg",
     accessLevel: "private",
+    url: "/src/assets/example/files/report.pdf",
   },
     {
     id: "7",
@@ -84,6 +90,7 @@ const exampleFiles: FileItem[] = [
     tags: ["фото", "видео"],
     thumbnail: "/src/assets/example/files/gif-file.gif",
     accessLevel: "public",
+    url: "/src/assets/example/files/gif-file.gif",
   },
   {
     id: "8",
@@ -95,6 +102,7 @@ const exampleFiles: FileItem[] = [
     tags: ["обучение", "видео"],
     thumbnail: "/src/assets/example/previews/video2.jpg",
     accessLevel: "public",
+    url: "/src/assets/example/files/video2.mp4",
   },
   {
     id: "9",
@@ -107,6 +115,7 @@ const exampleFiles: FileItem[] = [
     thumbnail: "/src/assets/example/previews/text.jpg",
     accessLevel: "private",
     isEditable: false,
+    url: "/src/assets/example/files/example.py",
   },
   {
     id: "10",
@@ -118,6 +127,7 @@ const exampleFiles: FileItem[] = [
     tags: ["фото"],
     thumbnail: "/src/assets/example/previews/vector.jpg",
     accessLevel: "public",
+    url: "/src/assets/example/files/image.svg",
   },
   {
     id: "11",
@@ -129,6 +139,7 @@ const exampleFiles: FileItem[] = [
     tags: ["фото"],
     thumbnail: "/src/assets/example/files/pixels.webp",
     accessLevel: "public",
+    url: "/src/assets/example/files/pixels.webp",
   },
   {
     id: "12",
@@ -140,6 +151,7 @@ const exampleFiles: FileItem[] = [
     tags: ["документ", "работа"],
     thumbnail: "/src/assets/example/previews/text.jpg",
     accessLevel: "private",
+    url: "/src/assets/example/files/document.docx",
   }
 ]
 
@@ -169,7 +181,18 @@ function App() {
   const [tagSearch, setTagSearch] = useState("")
   const [includedTags, setIncludedTags] = useState<string[]>([])
   const [excludedTags, setExcludedTags] = useState<string[]>([])
+  const [showNotification, setShowNotification] = useState(false)
+  const [notificationText, setNotificationText] = useState("")
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (showNotification) {
+      const timer = setTimeout(() => {
+        setShowNotification(false)
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [showNotification])
 
   const filteredTags = exampleTags.filter(
     (tag) =>
@@ -200,7 +223,46 @@ function App() {
     )
   }
 
-const handleFileClick = (file: FileItem) => {
+  const handleShare = (fileId: string) => {
+    const url = `${window.location.origin}/example/${fileId}`
+    navigator.clipboard.writeText(url)
+    setNotificationText("Ссылка на файл скопирована")
+    setShowNotification(true)
+  }
+
+  const handleCopyDownloadLink = (fileId: string) => {
+    const file = files.find((f) => f.id === fileId)
+    if (file && file.url) {
+      const downloadUrl = new URL(file.url, window.location.origin).href
+      navigator.clipboard.writeText(downloadUrl)
+      setNotificationText("Ссылка для скачивания скопирована")
+      setShowNotification(true)
+    }
+  }
+
+  const handleDownload = (fileId: string) => {
+    const file = files.find((f) => f.id === fileId)
+    if (file && file.url) {
+      const link = document.createElement("a")
+      link.href = file.url
+      link.download = file.name
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+  }
+
+  const handleDelete = (fileId: string) => {
+    setFiles((prevFiles) => prevFiles.filter((f) => f.id !== fileId))
+  }
+
+  const handleAccessLevelChange = (fileId: string, newLevel: "public" | "private") => {
+    setFiles((prevFiles) =>
+      prevFiles.map((f) => (f.id === fileId ? { ...f, accessLevel: newLevel } : f)),
+    )
+  }
+
+  const handleFileClick = (file: FileItem) => {
     //заменить на нормальную ссылку при добавлении апи
     navigate(`/example/${file.id}`)
   }
@@ -211,6 +273,14 @@ const handleFileClick = (file: FileItem) => {
 
   return (
     <div className="app-container">
+      {showNotification && (
+        <div className="copy-notification">
+          <div className="notification-content">
+            <span className="notification-icon">✓</span>
+            <span className="notification-text">{notificationText}</span>
+          </div>
+        </div>
+      )}
       <div className="app-content">
         <div className="page-header">
           <div className="page-header-content">
@@ -364,11 +434,16 @@ const handleFileClick = (file: FileItem) => {
         </div>
       </div>
       <FileGrid
-          files={files}
-          onFileClick={handleFileClick}
-          onToggleFavorite={handleToggleFavorite}
-          emptyMessage="Файлы не найдены"
-        />
+        files={files}
+        onFileClick={handleFileClick}
+        onToggleFavorite={handleToggleFavorite}
+        onShare={handleShare}
+        onDownload={handleDownload}
+        onCopyDownloadLink={handleCopyDownloadLink}
+        onDelete={handleDelete}
+        onAccessLevelChange={handleAccessLevelChange}
+        emptyMessage="Файлы не найдены"
+      />
     </div>
   )
 }
