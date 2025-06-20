@@ -18,6 +18,7 @@ const exampleFiles: FileItem[] = [
     modifiedDate: "2024-01-15",
     isFavorite: true,
     tags: ["работа", "презентация", "проект"],
+    accessLevel: "private",
   },
   {
     id: "2",
@@ -28,6 +29,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: false,
     tags: ["отпуск", "фото", "личное"],
     thumbnail: "/src/assets/example/previews/photo.jpg",
+    accessLevel: "public",
   },
   {
     id: "3",
@@ -38,6 +40,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: true,
     tags: ["обучение", "видео"],
     thumbnail: "/src/assets/example/previews/video.jpg",
+    accessLevel: "private",
   },
   {
     id: "4",
@@ -47,6 +50,7 @@ const exampleFiles: FileItem[] = [
     modifiedDate: "2024-01-05",
     isFavorite: false,
     tags: ["архив", "документы"],
+    accessLevel: "private",
   },
   {
     id: "5",
@@ -57,6 +61,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: false,
     tags: ["музыка", "аудио"],
     thumbnail: "/src/assets/example/previews/music.jpg",
+    accessLevel: "public",
   },
   {
     id: "6",
@@ -67,6 +72,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: true,
     tags: ["работа", "отчёт"],
     thumbnail: "/src/assets/example/previews/report.jpg",
+    accessLevel: "private",
   },
     {
     id: "7",
@@ -77,6 +83,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: true,
     tags: ["фото", "видео"],
     thumbnail: "/src/assets/example/files/gif-file.gif",
+    accessLevel: "public",
   },
   {
     id: "8",
@@ -87,6 +94,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: true,
     tags: ["обучение", "видео"],
     thumbnail: "/src/assets/example/previews/video2.jpg",
+    accessLevel: "public",
   },
   {
     id: "9",
@@ -97,6 +105,8 @@ const exampleFiles: FileItem[] = [
     isFavorite: true,
     tags: ["документы"],
     thumbnail: "/src/assets/example/previews/text.jpg",
+    accessLevel: "private",
+    isEditable: false,
   },
   {
     id: "10",
@@ -107,7 +117,7 @@ const exampleFiles: FileItem[] = [
     isFavorite: false,
     tags: ["фото"],
     thumbnail: "/src/assets/example/previews/vector.jpg",
-
+    accessLevel: "public",
   },
   {
     id: "11",
@@ -118,7 +128,19 @@ const exampleFiles: FileItem[] = [
     isFavorite: false,
     tags: ["фото"],
     thumbnail: "/src/assets/example/files/pixels.webp",
+    accessLevel: "public",
   },
+  {
+    id: "12",
+    name: "Документ.docx",
+    type: "document",
+    size: "15 KB",
+    modifiedDate: "2024-01-25",
+    isFavorite: false,
+    tags: ["документ", "работа"],
+    thumbnail: "/src/assets/example/previews/text.jpg",
+    accessLevel: "private",
+  }
 ]
 
 const exampleTags: Tag[] = [

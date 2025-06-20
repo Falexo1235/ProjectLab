@@ -428,3 +428,51 @@
     padding: 16px;
   }
 }
+
+.admin-controls {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-primary);
+}
+
+.admin-controls h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.access-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.access-toggle span {
+  font-size: 0.9em;
+}
+
+.file-viewer-button img {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+.access-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.access-change-button {
+  background: none;
+  border: none;
+  color: var(--accent-primary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px;
+}
+
+.access-change-button:hover {
+  text-decoration: underline;
+  color: var(--accent-hover);
+}

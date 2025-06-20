@@ -6,9 +6,10 @@ interface TextEditorProps {
   fileUrl: string
   fileName: string
   onSave: (content: string) => void
+  isAuthorized: boolean
 }
 
-export default function TextEditor({ fileUrl, fileName, onSave }: TextEditorProps) {
+export default function TextEditor({ fileUrl, fileName, onSave, isAuthorized }: TextEditorProps) {
   const [text, setText] = useState("")
   const [isLoading, setIsLoading] = useState(true)
 
@@ -41,14 +42,16 @@ export default function TextEditor({ fileUrl, fileName, onSave }: TextEditorProp
     <div className="text-editor-container">
       <div className="text-editor-header">
         <h3>{fileName}</h3>
+        {isAuthorized && (
         <button onClick={handleSave} className="save-button">
           Save
         </button>
+        )}
       </div>
       <div className="text-editor-content">
         <Editor
           value={text}
-          onValueChange={setText}
+          onValueChange={isAuthorized ? setText : () => {}}
           highlight={() => text}
           padding={10}
           style={{

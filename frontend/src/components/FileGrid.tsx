@@ -3,8 +3,8 @@ import "./FileGrid.css"
 
 interface FileGridProps {
   files: FileItem[]
-  onFileClick?: (file: FileItem) => void
-  onToggleFavorite?: (fileId: string) => void
+  onFileClick: (file: FileItem) => void
+  onToggleFavorite: (fileId: string) => void
   emptyMessage?: string
 }
 
@@ -28,10 +28,14 @@ export function FileGrid({ files, onFileClick, onToggleFavorite, emptyMessage = 
   return (
     <div className="file-grid">
       {files.map((file) => (
-        <FileCard key={file.id} file={file} onClick={onFileClick} onToggleFavorite={onToggleFavorite} />
+        <FileCard
+          key={file.id}
+          file={file}
+          onClick={() => onFileClick(file)}
+          onToggleFavorite={() => onToggleFavorite(file.id)}
+        />
       ))}
     </div>
   )
 }
-
 export type { FileItem }

@@ -79,6 +79,9 @@
 }
 
 .file-favorite-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
   border: none;
   cursor: pointer;
   display: flex;
@@ -89,6 +92,13 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   flex-shrink: 0;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.file-card:hover .file-favorite-button {
+  opacity: 1;
+  visibility: visible;
 }
 
 .file-favorite-button:hover {

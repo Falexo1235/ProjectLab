@@ -10,6 +10,8 @@ export interface FileItem {
   isFavorite: boolean
   tags: string[]
   thumbnail?: string
+  accessLevel?: "public" | "private"
+  isEditable?: boolean
 }
 
 interface FileCardProps {
@@ -77,6 +79,20 @@ export function FileCard({ file, onClick, onToggleFavorite }: FileCardProps) {
             }}
           />
         </div>
+        <button
+          className="file-favorite-button"
+          onClick={handleFavoriteClick}
+          aria-label={file.isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
+        >
+          <img
+            src={getStarIcon(file.isFavorite) || "/placeholder.svg"}
+            alt={file.isFavorite ? "Избранное" : "Не избранное"}
+            className="star-icon"
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder.svg?height=16&width=16"
+            }}
+          />
+        </button>
       </div>
 
       <div className="file-info">
@@ -84,20 +100,6 @@ export function FileCard({ file, onClick, onToggleFavorite }: FileCardProps) {
           <h3 className="file-name" title={file.name}>
             {file.name}
           </h3>
-          <button
-            className="file-favorite-button"
-            onClick={handleFavoriteClick}
-            aria-label={file.isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
-          >
-            <img
-              src={getStarIcon(file.isFavorite) || "/placeholder.svg"}
-              alt={file.isFavorite ? "Избранное" : "Не избранное"}
-              className="star-icon"
-              onError={(e) => {
-                e.currentTarget.src = "/placeholder.svg?height=16&width=16"
-              }}
-            />
-          </button>
         </div>
 
         <div className="file-meta">

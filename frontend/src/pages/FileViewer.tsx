@@ -5,14 +5,14 @@ import ImageViewer from "../components/ImageViewer"
 import "./FileViewer.css"
 import TextEditor from "../components/TextEditor"
 import PDFViewer from "../components/PDFViewer"
+import DocxViewer from "../components/DocxViewer"
 
 type FileType = 
   | "image" 
   | "video" 
   | "audio" 
-  | "document" 
+  | "docx" 
   | "presentation" 
-  | "spreadsheet" 
   | "pdf" 
   | "text" 
   | "archive" 
@@ -35,6 +35,7 @@ interface FileData {
     bitrate?: string
     format?: string
   }
+  accessLevel: string
 }
 
 const getFileType = (mime: string) : FileType => {
@@ -50,20 +51,13 @@ const getFileType = (mime: string) : FileType => {
       return "text"
     case "application":
       {
-        if ([
-          "msword", 
-          "vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ].includes(subtype)) return "document"
+        if (subtype === "vnd.openxmlformats-officedocument.wordprocessingml.document")
+          return "docx"
 
         if ([
           "vnd.ms-powerpoint",
           "vnd.openxmlformats-officedocument.presentationml.presentation"
         ].includes(subtype)) return "presentation"
-
-        if ([
-          "vnd.ms-excel",
-          "vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ].includes(subtype)) return "spreadsheet"
 
         if (subtype === "pdf") return "pdf"
       }
@@ -83,6 +77,7 @@ const exampleFileData: Record<string, FileData> = {
     isFavorite: true,
     tags: ["работа", "презентация", "проект"],
     url: "/src/assets/example/files/presentation.pptx",
+    accessLevel: "private",
   },
   "2": {
     id: "2",
@@ -97,6 +92,7 @@ const exampleFileData: Record<string, FileData> = {
       dimensions: { width: 1920, height: 1920 },
       format: "JPG",
     },
+    accessLevel: "private",
   },
   "3": {
     id: "3",
@@ -112,6 +108,7 @@ const exampleFileData: Record<string, FileData> = {
       dimensions: { width: 842, height: 480 },
       format: "MP4",
     },
+    accessLevel: "private",
   },
   "4": {
     id: "4",
@@ -122,6 +119,7 @@ const exampleFileData: Record<string, FileData> = {
     isFavorite: false,
     tags: ["архив", "документы"],
     url: "/src/assets/example/files/documents.zip",
+    accessLevel: "private"
   },
   "5": {
     id: "5",
@@ -138,6 +136,7 @@ const exampleFileData: Record<string, FileData> = {
       bitrate: "192 kbps",
       format: "MP3",
     },
+    accessLevel: "private",
   },
   "6": {
     id: "6",
@@ -148,6 +147,7 @@ const exampleFileData: Record<string, FileData> = {
     isFavorite: true,
     tags: ["работа", "отчёт"],
     url: "/src/assets/example/files/report.pdf",
+    accessLevel: "private",
   },
     "7": {
     id: "7",
@@ -162,6 +162,7 @@ const exampleFileData: Record<string, FileData> = {
       dimensions: { width: 640, height: 480 },
       format: "GIF",
     },
+    accessLevel: "private",
   },
     "8": {
     id: "8",
@@ -177,7 +178,7 @@ const exampleFileData: Record<string, FileData> = {
       dimensions: { width: 360, height: 656 },
       format: "MP4",
     },
-    
+    accessLevel: "private",
   },
   "9": {
     id: "9",
@@ -188,6 +189,7 @@ const exampleFileData: Record<string, FileData> = {
     isFavorite: false,
     tags: ["документ", "текст"],
     url: "/src/assets/example/files/example.py",
+    accessLevel: "private",
   },
   "10": {
     id: "10",
@@ -202,6 +204,7 @@ const exampleFileData: Record<string, FileData> = {
       dimensions: {width: 150, height: 150},
       format: "SVG",
     },
+    accessLevel: "private",
   },
     "11": {
     id: "11",
@@ -216,6 +219,18 @@ const exampleFileData: Record<string, FileData> = {
       dimensions: { width: 48, height: 64 },
       format: "WEBP",
     },
+    accessLevel: "public",
+  },
+  "12": {
+    id: "12",
+    name: "Документ.docx",
+    mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    size: "15 KB",
+    modifiedDate: "2024-01-25",
+    isFavorite: false,
+    tags: ["документ", "работа"],
+    url: "/src/assets/example/files/document.docx",
+    accessLevel: "private",
   }
 }
 
@@ -224,8 +239,8 @@ export default function FileViewer() {
   const navigate = useNavigate()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
-
-  const file = id ? exampleFileData[id] : null
+  const [file, setFile] = useState(exampleFileData[id ?? "1"])
+  const isAuthorized = true // Placeholder for admin state
 
   useEffect(() => {
     if (showNotification) {
@@ -235,6 +250,13 @@ export default function FileViewer() {
       return () => clearTimeout(timer)
     }
   }, [showNotification])
+
+  const handleAccessLevelChange = () => {
+    setFile((prevFile) => ({
+      ...prevFile,
+      accessLevel: prevFile.accessLevel === "public" ? "private" : "public",
+    }))
+  }
 
   if (!file) {
     return (
@@ -297,7 +319,7 @@ export default function FileViewer() {
         )
 
       case "video":
-        const isVertical = file.metadata?.dimensions?.height > file.metadata?.dimensions?.width;
+        const isVertical = (file.metadata?.dimensions?.height ?? 0) > (file.metadata?.dimensions?.width ?? 0);
         return (
           <div className="video-viewer">
             <ReactPlayer url={file.url} controls width={isVertical ? "auto" : "100%"}  style={{ maxHeight: "70vh" }} height={isVertical ? "100%" : "auto"}/>
@@ -321,6 +343,12 @@ export default function FileViewer() {
             <ReactPlayer url={file.url} controls width="100%" height="60px" />
           </div>
         )
+      case "docx":
+        return (
+          <div className="document-viewer">
+            <DocxViewer fileUrl={file.url} />
+          </div>
+        );
       case "pdf": 
         return (
           <div className="pdf-viewer">
@@ -333,7 +361,8 @@ export default function FileViewer() {
             <TextEditor 
               fileUrl={file.url}
               fileName={file.name}
-              onSave={console.log("save")}
+              onSave={() => console.log("save")}
+              isAuthorized={isAuthorized}
             />
           </div>
         )
@@ -393,6 +422,19 @@ export default function FileViewer() {
               />
               Скачать
             </button>
+            {isAuthorized && (
+              <button className="action-button download-button">
+                <img
+                  src="/src/assets/icons/upload.png"
+                  alt="Replace"
+                  className="action-icon"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg?height=16&width=16"
+                  }}
+                />
+                Заменить
+              </button>
+            )}
           </div>
         </div>
         <div className="file-content">{renderFileContent()}</div>
@@ -415,23 +457,23 @@ export default function FileViewer() {
                 </div>
               </div>
             )}
-            {file.metadata && (
+            {(file.metadata || isAuthorized) && (
               <div className="file-metadata">
-                <h3>Информация о файле:</h3>
+                {file.metadata && <h3>Информация о файле:</h3>}
                 <div className="metadata-list">
-                  {file.metadata.duration && (
+                  {file.metadata?.duration && (
                     <div className="metadata-item">
                       <span className="metadata-label">Длительность:</span>
                       <span className="metadata-value">{file.metadata.duration}</span>
                     </div>
                   )}
-                  {file.metadata.resolution && (
+                  {file.metadata?.resolution && (
                     <div className="metadata-item">
                       <span className="metadata-label">Разрешение:</span>
                       <span className="metadata-value">{file.metadata.resolution}</span>
                     </div>
                   )}
-                  {file.metadata.dimensions && (
+                  {file.metadata?.dimensions && (
                     <div className="metadata-item">
                       <span className="metadata-label">Размеры:</span>
                       <span className="metadata-value">
@@ -439,16 +481,27 @@ export default function FileViewer() {
                       </span>
                     </div>
                   )}
-                  {file.metadata.bitrate && (
+                  {file.metadata?.bitrate && (
                     <div className="metadata-item">
                       <span className="metadata-label">Битрейт:</span>
                       <span className="metadata-value">{file.metadata.bitrate}</span>
                     </div>
                   )}
-                  {file.metadata.format && (
+                  {file.metadata?.format && (
                     <div className="metadata-item">
                       <span className="metadata-label">Формат:</span>
                       <span className="metadata-value">{file.metadata.format}</span>
+                    </div>
+                  )}
+                  {isAuthorized && (
+                    <div className="metadata-item">
+                      <span className="metadata-label">Уровень доступа:</span>
+                      <div className="access-control">
+                        <span className="metadata-value">{file.accessLevel === "public" ? "Публичный" : "Приватный"}</span>
+                        <button onClick={handleAccessLevelChange} className="access-change-button">
+                          Изменить
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
