@@ -9,7 +9,7 @@ interface TextEditorProps {
   isAuthorized: boolean
 }
 
-export default function TextEditor({ fileUrl, fileName, onSave, isAuthorized }: TextEditorProps) {
+export default function TextEditor({ fileUrl, fileName }: TextEditorProps) {
   const [text, setText] = useState("")
   const [isLoading, setIsLoading] = useState(true)
 
@@ -29,10 +29,6 @@ export default function TextEditor({ fileUrl, fileName, onSave, isAuthorized }: 
 
     fetchTextFile()
   }, [fileUrl])
-
-  const handleSave = () => {
-    onSave(text)
-  }
 
   if (isLoading) {
     return <div className="text-loading">Loading...</div>
