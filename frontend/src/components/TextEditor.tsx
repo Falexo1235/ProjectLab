@@ -42,16 +42,11 @@ export default function TextEditor({ fileUrl, fileName, onSave, isAuthorized }: 
     <div className="text-editor-container">
       <div className="text-editor-header">
         <h3>{fileName}</h3>
-        {isAuthorized && (
-        <button onClick={handleSave} className="save-button">
-          Save
-        </button>
-        )}
       </div>
       <div className="text-editor-content">
         <Editor
           value={text}
-          onValueChange={isAuthorized ? setText : () => {}}
+          onValueChange={() => {}}
           highlight={() => text}
           padding={10}
           style={{

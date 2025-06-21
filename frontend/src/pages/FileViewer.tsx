@@ -433,19 +433,6 @@ export default function FileViewer() {
               />
               Скачать
             </button>
-            {isAuthorized && (
-              <button className="action-button download-button">
-                <img
-                  src="/src/assets/icons/upload.png"
-                  alt="Replace"
-                  className="action-icon"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.svg?height=16&width=16"
-                  }}
-                />
-                Заменить
-              </button>
-            )}
           </div>
         </div>
         <div className="file-content">{renderFileContent()}</div>
