@@ -41,8 +41,8 @@ public class UserRepository : IUserRepository
 
     public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
-        var sql = $"UPDATE Users SET LastLoginAt = '{user.LastLoginAt}', IsActive = '{user.IsActive}' WHERE Id = '{user.Id}'";
-        await _context.Database.ExecuteSqlRawAsync(sql, cancellationToken);
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(User user, CancellationToken cancellationToken = default)

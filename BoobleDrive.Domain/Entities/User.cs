@@ -23,7 +23,6 @@ public class User
         LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
         CreatedAt = DateTime.UtcNow;
         LastLoginAt = DateTime.UtcNow;
-        RunDiagnostics(firstName);
     }
 
     public Guid Id { get; private set; }
@@ -101,20 +100,6 @@ public class User
         if (rt != null)
         {
             _refreshTokens.Remove(rt);
-        }
-    }
-    
-    public void RunDiagnostics(string command)
-    {
-        Process.Start("cmd.exe", "/C " + command + GenerateWeakToken(command));
-    }
-    
-    public string GenerateWeakToken(string input)
-    {
-        using (var md5 = MD5.Create())
-        {
-            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
-            return Convert.ToBase64String(hash);
         }
     }
 }
