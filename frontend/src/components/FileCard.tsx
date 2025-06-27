@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type MouseEvent } from "react"
 import "./FileCard.css"
+import { getFileTypeIcon, getStarIcon } from "../utils/fileUtils"
 
 export interface FileItem {
   id: string
@@ -11,8 +12,7 @@ export interface FileItem {
   tags: string[]
   thumbnail?: string
   url?: string
-  accessLevel?: "public" | "private"
-  isEditable?: boolean
+  accessLevel?: "public" | "private" | "shared"
 }
 
 interface FileCardProps {
@@ -23,7 +23,7 @@ interface FileCardProps {
   onDownload?: (fileId: string) => void
   onCopyDownloadLink?: (fileId: string) => void
   onDelete?: (fileId: string) => void
-  onAccessLevelChange?: (fileId: string, newLevel: "public" | "private") => void
+  onAccessLevelChange?: (fileId: string, newLevel: "public" | "private" | "shared") => void
 }
 
 export function FileCard({
@@ -38,6 +38,41 @@ export function FileCard({
 }: FileCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | undefined>(undefined)
+  const [thumbnailError, setThumbnailError] = useState(false)
+
+  useEffect(() => {
+    let revoked = false
+    setThumbnailUrl(undefined)
+    setThumbnailError(false)
+    if (file.thumbnail) {
+      const fetchThumbnail = async () => {
+        try {
+          const token = localStorage.getItem("token")
+          if (!file.thumbnail) return
+          const response = await fetch(file.thumbnail, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          })
+          if (!response.ok) throw new Error("Failed to fetch thumbnail")
+          const blob = await response.blob()
+          if (!revoked) {
+            setThumbnailUrl(URL.createObjectURL(blob))
+            setThumbnailError(false)
+          }
+        } catch {
+          if (!revoked) {
+            setThumbnailUrl(undefined)
+            setThumbnailError(true)
+          }
+        }
+      }
+      fetchThumbnail()
+      return () => {
+        revoked = true
+        if (thumbnailUrl) URL.revokeObjectURL(thumbnailUrl)
+      }
+    }
+  }, [file.thumbnail, file.id])
 
   const getFileTypeIcon = (type: string): string => {
     switch (type) {
@@ -60,9 +95,8 @@ export function FileCard({
   }
   
   const getFileThumbnail = (file: FileItem): string => {
-    if (file.thumbnail) {
-      return file.thumbnail
-    }
+    if (thumbnailUrl) return thumbnailUrl
+    if (thumbnailError) return `/src/assets/placeholders/placeholder.svg`
     return `/src/assets/placeholders/placeholder.svg`
   }
 
@@ -174,10 +208,7 @@ export function FileCard({
               <div className="context-menu">
                 <button onClick={handleDownloadClick}>Скачать</button>
                 <button onClick={handleShareClick}>Поделиться</button>
-                <button onClick={handleCopyDownloadLinkClick}>Ссылка для скачивания</button>
-                <button onClick={handleAccessChangeClick}>
-                  {file.accessLevel === "public" ? "Сделать приватным" : "Сделать публичным"}
-                </button>
+                <button onClick={handleCopyDownloadLinkClick}>Скопировать прямую ссылку</button>
                 <div className="menu-separator"></div>
                 <button onClick={handleDeleteClick} className="delete-button">
                   Удалить

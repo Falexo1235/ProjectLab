@@ -181,6 +181,20 @@
 .video-viewer {
   display: flex;
   justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  height: 70vh;
+  max-height: 70vh;
+  overflow: hidden;
+  background: black;
+}
+
+.video-viewer video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  background: black;
 }
 
 .audio-viewer {
@@ -502,4 +516,140 @@
 .access-change-button:hover {
   text-decoration: underline;
   color: var(--accent-hover);
+}
+
+.file-access-metadata {
+  border-top: 2px solid var(--border-secondary);
+  margin-top: -16px;
+}
+
+.file-actions-menu {
+  position: relative;
+}
+
+.menu-toggle-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-secondary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.menu-toggle-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.context-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow);
+  z-index: 10;
+  width: max-content;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.context-menu button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--text-primary);
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.context-menu button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.context-menu .delete-button {
+  color: var(--tag-excluded-text, #e74c3c);
+}
+
+.context-menu .delete-button:hover {
+  color: var(--tag-excluded-text, #e74c3c);
+  background-color: var(--tag-excluded-bg, #fbeaea);
+}
+
+.menu-separator {
+  height: 1px;
+  background-color: var(--border-primary);
+  margin: 4px 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: var(--bg-primary, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 32px 28px 24px 28px;
+  min-width: 320px;
+  max-width: 90vw;
+  width: 400px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.upload-cancel {
+  background: none;
+  border: 1px solid var(--border-secondary, #d0d0d0);
+  color: var(--text-primary, #222);
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.upload-cancel:hover {
+  background: #f3f3f3;
+}
+
+.upload-submit {
+  background: var(--accent-primary, #3b82f6);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.upload-submit:disabled {
+  background: #b3cdf6;
+  cursor: not-allowed;
 }

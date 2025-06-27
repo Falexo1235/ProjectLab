@@ -5,6 +5,19 @@
   color: var(--text-primary);
 }
 
+button:focus {
+  outline: none;
+}
+
+button:active {
+  transform: translateY(1px);
+  opacity: 0.8;
+}
+
+button {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
 .app-content {
   max-width: 1280px;
   margin: 0 auto;

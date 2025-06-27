@@ -2,33 +2,35 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import "./LoginPage.css"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setLoading(true)
     try {
-      const response = await fetch("http://localhost:5107/api/v1/Users/login", {
+      const response = await fetch("http://localhost:5107/api/v1/Users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, firstName, lastName })
       })
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
-        setError(data?.message || "Ошибка входа. Проверьте данные.")
+        setError(data?.message || "Ошибка регистрации. Проверьте данные.")
         setLoading(false)
         return
       }
       const data = await response.json()
       localStorage.setItem("token", data.token)
       localStorage.setItem("refreshToken", data.refreshToken)
-    navigate("/")
+      navigate("/")
     } catch (err) {
       setError("Ошибка сети. Попробуйте позже.")
       setLoading(false)
@@ -40,9 +42,9 @@ export default function LoginPage() {
       <div className="login-box">
         <div className="login-header">
           <h1 className="login-title">Booble Drive</h1>
-          <p className="login-subtitle">Вход в аккаунт</p>
+          <p className="login-subtitle">Регистрация</p>
         </div>
-        <form className="login-form" onSubmit={handleLogin}>
+        <form className="login-form" onSubmit={handleRegister}>
           <input
             type="email"
             placeholder="Email"
@@ -53,20 +55,37 @@ export default function LoginPage() {
           />
           <input
             type="password"
-            placeholder="Пароль"
+            placeholder="Пароль (минимум 8 символов)"
             className="login-input"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            minLength={8}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Имя"
+            className="login-input"
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Фамилия"
+            className="login-input"
+            value={lastName}
+            onChange={e => setLastName(e.target.value)}
             required
           />
           {error && <div style={{ color: "#e74c3c", fontSize: 14 }}>{error}</div>}
           <button type="submit" className="login-button" disabled={loading}>
-            {loading ? "Вход..." : "Войти"}
+            {loading ? "Регистрация..." : "Зарегистрироваться"}
           </button>
         </form>
         <div style={{ marginTop: 16, fontSize: 14 }}>
-          Нет аккаунта?{' '}
-          <span style={{ color: "#3b82f6", cursor: "pointer" }} onClick={() => navigate("/register")}>Зарегистрироваться</span>
+          Уже есть аккаунт?{' '}
+          <span style={{ color: "#3b82f6", cursor: "pointer" }} onClick={() => navigate("/login")}>Войти</span>
         </div>
       </div>
     </div>

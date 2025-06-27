@@ -9,7 +9,7 @@ interface FileGridProps {
   onDownload?: (fileId: string) => void
   onCopyDownloadLink?: (fileId: string) => void
   onDelete?: (fileId: string) => void
-  onAccessLevelChange?: (fileId: string, newLevel: "public" | "private") => void
+  onAccessLevelChange?: (fileId: string, newLevel: "public" | "private" | "shared") => void
   emptyMessage?: string
 }
 
