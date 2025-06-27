@@ -6,6 +6,7 @@ namespace BoobleDrive.Domain.Repositories;
 public interface IFileRepository
 {
     Task<DriveFile?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<DriveFile?> GetByIdWithTagsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<DriveFile?> GetByIdWithVersionsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<DriveFile?> GetByIdWithPublicLinksAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DriveFile>> GetByOwnerIdAsync(Guid ownerId, bool includeDeleted = false, CancellationToken cancellationToken = default);
@@ -15,6 +16,7 @@ public interface IFileRepository
     Task<IReadOnlyList<DriveFile>> GetPublicFilesAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DriveFile>> SearchAsync(string searchTerm, Guid? userId = null, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DriveFile>> SearchAsync(string? searchTerm, Guid? userId, List<string>? tagNames, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<DriveFile>> GetFavoritesByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<DriveFile> AddAsync(DriveFile file, CancellationToken cancellationToken = default);
     Task UpdateAsync(DriveFile file, CancellationToken cancellationToken = default);
     Task DeleteAsync(DriveFile file, CancellationToken cancellationToken = default);

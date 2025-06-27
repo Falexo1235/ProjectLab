@@ -10,4 +10,14 @@ public interface ITagRepository
     ///     The operation is case-insensitive.
     /// </summary>
     Task<IReadOnlyList<Tag>> GetOrCreateTagsAsync(IEnumerable<string> tagNames, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    ///     Retrieves all tags in the system.
+    /// </summary>
+    Task<IReadOnlyList<Tag>> GetAllTagsAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    ///     Searches for tags by name pattern for autocomplete functionality.
+    /// </summary>
+    Task<IReadOnlyList<Tag>> SearchTagsAsync(string searchTerm, int limit = 10, CancellationToken cancellationToken = default);
 }

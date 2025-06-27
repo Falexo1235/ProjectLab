@@ -20,6 +20,14 @@ public class FileRepository : IFileRepository
             .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
     }
 
+    public async Task<DriveFile?> GetByIdWithTagsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Include(f => f.Owner)
+            .Include(f => f.Tags).ThenInclude(t => t.Tag)
+            .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+    }
+
     public async Task<DriveFile?> GetByIdWithVersionsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Files
@@ -53,7 +61,7 @@ public class FileRepository : IFileRepository
         if (tagNames != null && tagNames.Any())
         {
             var lowered = tagNames.Select(t => t.ToLower()).ToList();
-            query = query.Where(f => f.Tags.Any(t => lowered.Contains(t.Tag.Name.ToLower())));
+            query = query.Where(f => lowered.All(tag => f.Tags.Any(t => t.Tag.Name.ToLower() == tag)));
         }
 
         return await query.OrderByDescending(f => f.UpdatedAt).ToListAsync(cancellationToken);
@@ -75,7 +83,7 @@ public class FileRepository : IFileRepository
         if (tagNames != null && tagNames.Any())
         {
             var lowered = tagNames.Select(t => t.ToLower()).ToList();
-            query = query.Where(f => f.Tags.Any(t => lowered.Contains(t.Tag.Name.ToLower())));
+            query = query.Where(f => lowered.All(tag => f.Tags.Any(t => t.Tag.Name.ToLower() == tag)));
         }
 
         return await query.OrderByDescending(f => f.UpdatedAt).ToListAsync(cancellationToken);
@@ -116,7 +124,7 @@ public class FileRepository : IFileRepository
         if (tagNames != null && tagNames.Any())
         {
             var loweredTags = tagNames.Select(t => t.ToLower()).ToList();
-            query = query.Where(f => f.Tags.Any(t => loweredTags.Contains(t.Tag.Name.ToLower())));
+            query = query.Where(f => loweredTags.All(tag => f.Tags.Any(t => t.Tag.Name.ToLower() == tag)));
         }
 
         if (userId.HasValue)
@@ -176,5 +184,17 @@ public class FileRepository : IFileRepository
         return await _context.Files
             .Where(f => f.OwnerId == ownerId && f.DeletedAt == null)
             .SumAsync(f => f.Size, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<DriveFile>> GetFavoritesByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Include(f => f.Owner)
+            .Include(f => f.Tags).ThenInclude(t => t.Tag)
+            .Where(f => f.DeletedAt == null && f.FavoritedBy.Contains(userId))
+            .Where(f => f.OwnerId == userId || f.Visibility == FileVisibility.Public ||
+                f.Shares.Any(s => s.UserId == userId && (s.ExpiresAt == null || s.ExpiresAt > DateTime.UtcNow)))
+            .OrderByDescending(f => f.UpdatedAt)
+            .ToListAsync(cancellationToken);
     }
 }

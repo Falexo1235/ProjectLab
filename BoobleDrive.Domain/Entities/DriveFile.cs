@@ -9,6 +9,7 @@ public class DriveFile
     private readonly List<FileShare> _shares = new List<FileShare>();
     private readonly List<DriveFileTag> _tags = new List<DriveFileTag>();
     private readonly List<FileVersion> _versions = new List<FileVersion>();
+    private readonly List<Guid> _favoritedBy = new List<Guid>();
 
     private DriveFile()
     {
@@ -46,7 +47,6 @@ public class DriveFile
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
 
-
         var initialVersion = new FileVersion(Id, 1, content, size, hash);
         _versions.Add(initialVersion);
     }
@@ -70,6 +70,7 @@ public class DriveFile
     public IReadOnlyList<FileShare> Shares => _shares.AsReadOnly();
     public IReadOnlyList<DriveFileTag> Tags => _tags.AsReadOnly();
     public IReadOnlyList<PublicLink> PublicLinks => _publicLinks.AsReadOnly();
+    public IReadOnlyList<Guid> FavoritedBy => _favoritedBy.AsReadOnly();
 
     public void UpdateMetadata(string? name = null, string? description = null)
     {
@@ -101,6 +102,28 @@ public class DriveFile
             _tags.Remove(tagToRemove);
             UpdatedAt = DateTime.UtcNow;
         }
+    }
+
+    public void AddToFavorites(Guid userId)
+    {
+        if (!_favoritedBy.Contains(userId))
+        {
+            _favoritedBy.Add(userId);
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void RemoveFromFavorites(Guid userId)
+    {
+        if (_favoritedBy.Remove(userId))
+        {
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public bool IsFavoritedBy(Guid userId)
+    {
+        return _favoritedBy.Contains(userId);
     }
 
     public void AddVersion(byte[] content, long size, string hash)

@@ -14,4 +14,6 @@ public class FileDto
     public DateTime UpdatedAt { get; set; }
     public string Visibility { get; set; } = string.Empty;
     public int VersionCount { get; set; }
+    public List<string> Tags { get; set; } = new List<string>();
+    public bool IsFavorite { get; set; }
 }

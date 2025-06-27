@@ -34,44 +34,42 @@ public class FileService
 
     public async Task<FileDto?> GetFileByIdAsync(Guid fileId, Guid? userId = null, CancellationToken cancellationToken = default)
     {
-        var file = await _fileRepository.GetByIdAsync(fileId, cancellationToken);
+        var file = await _fileRepository.GetByIdWithTagsAsync(fileId, cancellationToken);
 
         if (file == null || file.IsDeleted)
         {
             return null;
         }
 
-
         if (userId.HasValue && !file.CanAccess(userId.Value, FilePermission.Read))
         {
             return null;
         }
 
-        return MapToDto(file);
+        return MapToDto(file, userId);
     }
 
     public async Task<IReadOnlyList<FileDto>> GetUserFilesAsync(Guid userId, List<string>? tags, CancellationToken cancellationToken = default)
     {
         var files = await _fileRepository.GetByOwnerIdAsync(userId, false, tags, cancellationToken);
-        return files.Select(MapToDto).ToList();
+        return files.Select(f => MapToDto(f, userId)).ToList();
     }
 
     public async Task<IReadOnlyList<FileDto>> GetSharedFilesAsync(Guid userId, List<string>? tags, CancellationToken cancellationToken = default)
     {
         var files = await _fileRepository.GetSharedWithUserAsync(userId, tags, cancellationToken);
-        return files.Select(MapToDto).ToList();
+        return files.Select(f => MapToDto(f, userId)).ToList();
     }
 
     public async Task<IReadOnlyList<FileDto>> SearchFilesAsync(string? searchTerm, Guid? userId, List<string>? tags, CancellationToken cancellationToken = default)
     {
         var files = await _fileRepository.SearchAsync(searchTerm, userId, tags, cancellationToken);
-        return files.Select(MapToDto).ToList();
+        return files.Select(f => MapToDto(f, userId)).ToList();
     }
 
     public async Task<FileDto> UploadFileAsync(string fileName, string? description, string contentType, byte[] content, Guid ownerId, CancellationToken cancellationToken = default)
     {
         var mimeType = new MimeType(contentType);
-
 
         var owner = await _userRepository.GetByIdAsync(ownerId, cancellationToken);
         if (owner == null)
@@ -84,25 +82,21 @@ public class FileService
             throw new InvalidOperationException("Storage quota exceeded");
         }
 
-
         var fileHash = _fileHashingService.ComputeHash(content);
-
 
         var existingFile = await _fileRepository.ExistsByHashAsync(fileHash, cancellationToken);
         if (existingFile)
         {
         }
 
-
         var file = new DriveFile(fileName, mimeType, content.Length, fileHash, ownerId, content, description);
-
 
         owner.AddFile(file);
 
         await _fileRepository.AddAsync(file, cancellationToken);
         await _userRepository.UpdateAsync(owner, cancellationToken);
 
-        return MapToDto(file);
+        return MapToDto(file, ownerId);
     }
 
     public async Task<byte[]?> DownloadFileAsync(Guid fileId, Guid userId, CancellationToken cancellationToken = default)
@@ -139,12 +133,12 @@ public class FileService
         file.UpdateMetadata(name, description);
         await _fileRepository.UpdateAsync(file, cancellationToken);
 
-        return MapToDto(file);
+        return MapToDto(file, userId);
     }
 
     public async Task<bool> DeleteFileAsync(Guid fileId, Guid userId, CancellationToken cancellationToken = default)
     {
-        var file = await _fileRepository.GetByIdAsync(fileId, cancellationToken);
+        var file = await _fileRepository.GetByIdWithTagsAsync(fileId, cancellationToken);
 
         if (file == null || file.IsDeleted)
         {
@@ -155,7 +149,6 @@ public class FileService
         {
             throw new UnauthorizedAccessException("Access denied");
         }
-
 
         var owner = await _userRepository.GetByIdAsync(file.OwnerId, cancellationToken);
         if (owner != null)
@@ -362,7 +355,7 @@ public class FileService
 
     public async Task UpdateTagsAsync(Guid fileId, Guid userId, List<string> tagNames, CancellationToken cancellationToken)
     {
-        var file = await _fileRepository.GetByIdAsync(fileId, cancellationToken);
+        var file = await _fileRepository.GetByIdWithTagsAsync(fileId, cancellationToken);
         if (file == null || !file.CanAccess(userId, FilePermission.Write))
         {
             throw new UnauthorizedAccessException("Access denied or file not found.");
@@ -383,8 +376,40 @@ public class FileService
         await _fileRepository.UpdateAsync(file, cancellationToken);
     }
 
-    private static FileDto MapToDto(DriveFile file)
+    public async Task AddToFavoritesAsync(Guid fileId, Guid userId, CancellationToken cancellationToken)
     {
+        var file = await _fileRepository.GetByIdWithTagsAsync(fileId, cancellationToken);
+        if (file == null || !file.CanAccess(userId, FilePermission.Read))
+        {
+            throw new UnauthorizedAccessException("Access denied or file not found.");
+        }
+
+        file.AddToFavorites(userId);
+        await _fileRepository.UpdateAsync(file, cancellationToken);
+    }
+
+    public async Task RemoveFromFavoritesAsync(Guid fileId, Guid userId, CancellationToken cancellationToken)
+    {
+        var file = await _fileRepository.GetByIdWithTagsAsync(fileId, cancellationToken);
+        if (file == null || !file.CanAccess(userId, FilePermission.Read))
+        {
+            throw new UnauthorizedAccessException("Access denied or file not found.");
+        }
+
+        file.RemoveFromFavorites(userId);
+        await _fileRepository.UpdateAsync(file, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<FileDto>> GetFavoriteFilesAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var files = await _fileRepository.GetFavoritesByUserIdAsync(userId, cancellationToken);
+        return files.Select(f => MapToDto(f, userId)).ToList();
+    }
+
+    private static FileDto MapToDto(DriveFile file, Guid? currentUserId = null)
+    {
+        var isFavorite = currentUserId.HasValue && file.IsFavoritedBy(currentUserId.Value);
+
         return new FileDto
         {
             Id = file.Id,
@@ -398,7 +423,9 @@ public class FileService
             CreatedAt = file.CreatedAt,
             UpdatedAt = file.UpdatedAt,
             Visibility = file.Visibility.ToString(),
-            VersionCount = file.Versions.Count
+            VersionCount = file.Versions.Count,
+            Tags = file.Tags.Select(t => t.Tag.Name).ToList(),
+            IsFavorite = isFavorite
         };
     }
 }

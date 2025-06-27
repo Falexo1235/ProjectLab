@@ -80,11 +80,6 @@ public class FilesController : ControllerBase
             return Unauthorized();
         }
 
-        if (string.IsNullOrWhiteSpace(searchTerm) && (tags == null || !tags.Any()))
-        {
-            return BadRequest("A search term or tags must be provided.");
-        }
-
         try
         {
             var files = await _fileService.SearchFilesAsync(searchTerm, userId, tags, cancellationToken);
@@ -574,6 +569,90 @@ public class FilesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating tags for file {FileId}", fileId);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("{fileId:guid}/favorite")]
+    public async Task<IActionResult> AddToFavorites(
+        Guid fileId,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await _fileService.AddToFavoritesAsync(fileId, userId.Value, cancellationToken);
+            return Ok("File added to favorites.");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid("Access denied");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding file {FileId} to favorites", fileId);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpDelete("{fileId:guid}/favorite")]
+    public async Task<IActionResult> RemoveFromFavorites(
+        Guid fileId,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await _fileService.RemoveFromFavoritesAsync(fileId, userId.Value, cancellationToken);
+            return Ok("File removed from favorites.");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid("Access denied");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing file {FileId} from favorites", fileId);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("favorites")]
+    public async Task<ActionResult<IReadOnlyList<FileDto>>> GetFavoriteFiles(
+        CancellationToken cancellationToken = default)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var files = await _fileService.GetFavoriteFilesAsync(userId.Value, cancellationToken);
+            return Ok(files);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving favorite files for user {UserId}", userId);
             return StatusCode(500, "Internal server error");
         }
     }

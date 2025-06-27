@@ -48,4 +48,29 @@ public class TagRepository : ITagRepository
 
         return existing.Concat(toCreate).ToList();
     }
+
+    public async Task<IReadOnlyList<Tag>> GetAllTagsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Tags
+            .OrderBy(t => t.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Tag>> SearchTagsAsync(string searchTerm, int limit = 10, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return await _context.Tags
+                .OrderBy(t => t.Name)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+        }
+
+        var lowered = searchTerm.ToLower();
+        return await _context.Tags
+            .Where(t => t.Name.ToLower().Contains(lowered))
+            .OrderBy(t => t.Name)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
 }
