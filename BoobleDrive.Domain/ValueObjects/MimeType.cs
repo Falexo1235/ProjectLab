@@ -2,30 +2,6 @@ namespace BoobleDrive.Domain.ValueObjects;
 
 public class MimeType : IEquatable<MimeType>
 {
-    private static readonly HashSet<string> AllowedMimeTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/svg+xml",
-        "image/bmp", "image/tiff", "image/ico",
-
-
-        "application/pdf", "text/plain", "text/html", "text/css", "text/javascript",
-        "application/json", "application/xml", "text/xml", "text/csv",
-        "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-
-
-        "application/zip", "application/x-rar-compressed", "application/x-7z-compressed",
-        "application/x-tar", "application/gzip",
-
-
-        "audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4",
-        "video/mp4", "video/avi", "video/mov", "video/wmv", "video/webm",
-
-
-        "application/octet-stream"
-    };
-
     private MimeType()
     {
     }
@@ -42,11 +18,6 @@ public class MimeType : IEquatable<MimeType>
         if (!value.Contains('/'))
         {
             throw new ArgumentException("Invalid MIME type format", nameof(value));
-        }
-
-        if (!AllowedMimeTypes.Contains(value))
-        {
-            throw new ArgumentException($"MIME type '{value}' is not allowed", nameof(value));
         }
 
         Value = value;
