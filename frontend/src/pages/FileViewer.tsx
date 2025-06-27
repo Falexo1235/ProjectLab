@@ -10,6 +10,7 @@ import { getFile, downloadFile, deleteFile as apiDeleteFile, updateFileTags as a
 import React from "react"
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal"
 import ShareModal from "../components/ShareModal"
+import { EditFileModal } from "../components/EditFileModal"
 import { formatSize, formatDuration, getFileType, getStarIcon } from "../utils/fileUtils"
 
 interface FileData {
@@ -53,6 +54,7 @@ export default function FileViewer() {
   const [isLoadingTags, setIsLoadingTags] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [notificationText, setNotificationText] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return
@@ -177,6 +179,29 @@ export default function FileViewer() {
   const handleEditTags = () => {
     setIsTagModalOpen(true);
     setIsMenuOpen(false);
+  };
+
+  const handleEditFile = () => {
+    setIsEditModalOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleFileUpdated = (updatedFile: any) => {
+    if (!file) return;
+    
+    setFile({
+      ...file,
+      name: updatedFile.name,
+      description: updatedFile.description,
+      modifiedDate: updatedFile.updatedAt || updatedFile.createdAt
+    });
+    
+    setShowNotification(true);
+    setNotificationText("Файл успешно обновлен");
   };
 
   const handleTagModalClose = () => {
@@ -500,6 +525,7 @@ export default function FileViewer() {
                 {isMenuOpen && (
                   <div className="context-menu" style={{ right: 0, left: "auto", minWidth: 160 }}>
                     <button onClick={handleDownload}>Скачать</button>
+                    <button onClick={handleEditFile}>Редактировать</button>
                     <button onClick={handleEditTags}>Изменить теги</button>
                     <div className="menu-separator"></div>
                     <button onClick={handleDelete} className="delete-button">Удалить</button>
@@ -660,6 +686,18 @@ export default function FileViewer() {
         onDeleteLink={handleDeleteShareLink}
         onVisibilityChange={handleVisibilityChange}
       />
+      {file && (
+        <EditFileModal
+          isOpen={isEditModalOpen}
+          onClose={handleEditModalClose}
+          file={{
+            id: file.id,
+            name: file.name,
+            description: file.description
+          }}
+          onFileUpdated={handleFileUpdated}
+        />
+      )}
     </div>
   )
 }

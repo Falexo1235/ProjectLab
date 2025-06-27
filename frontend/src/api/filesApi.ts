@@ -101,4 +101,20 @@ export async function setFileVisibility(fileId: string, visibility: "Private" | 
   });
   if (!response.ok) throw new Error("Ошибка изменения видимости файла");
   return response.text();
+}
+
+export async function updateFileMetadata(fileId: string, name?: string, description?: string) {
+  const body: any = {};
+  if (name !== undefined) body.name = name;
+  if (description !== undefined) body.description = description;
+  
+  const response = await fetchWithAuth(`http://localhost:5107/api/v1/Files/${fileId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+  if (!response.ok) throw new Error("Ошибка обновления файла");
+  return response.json();
 } 

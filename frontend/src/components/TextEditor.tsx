@@ -5,7 +5,6 @@ import "./TextEditor.css"
 interface TextEditorProps {
   fileUrl: string
   fileName: string
-  onSave: (content: string) => void
   isAuthorized: boolean
 }
 

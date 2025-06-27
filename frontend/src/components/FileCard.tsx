@@ -20,6 +20,7 @@ interface FileCardProps {
   onClick?: (file: FileItem) => void
   onToggleFavorite?: (fileId: string) => void
   onShare?: (fileId: string) => void
+  onEdit?: (fileId: string) => void
   onDownload?: (fileId: string) => void
   onCopyDownloadLink?: (fileId: string) => void
   onDelete?: (fileId: string) => void
@@ -31,6 +32,7 @@ export function FileCard({
   onClick,
   onToggleFavorite,
   onShare,
+  onEdit,
   onDownload,
   onCopyDownloadLink,
   onDelete,
@@ -117,6 +119,12 @@ export function FileCard({
   const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onShare?.(file.id)
+    setIsMenuOpen(false)
+  }
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onEdit?.(file.id)
     setIsMenuOpen(false)
   }
 
@@ -208,6 +216,7 @@ export function FileCard({
               <div className="context-menu">
                 <button onClick={handleDownloadClick}>Скачать</button>
                 <button onClick={handleShareClick}>Поделиться</button>
+                <button onClick={handleEditClick}>Редактировать</button>
                 <button onClick={handleCopyDownloadLinkClick}>Скопировать прямую ссылку</button>
                 <div className="menu-separator"></div>
                 <button onClick={handleDeleteClick} className="delete-button">

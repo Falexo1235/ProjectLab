@@ -6,6 +6,7 @@ interface FileGridProps {
   onFileClick: (file: FileItem) => void
   onToggleFavorite: (fileId: string) => void
   onShare?: (fileId: string) => void
+  onEdit?: (fileId: string) => void
   onDownload?: (fileId: string) => void
   onCopyDownloadLink?: (fileId: string) => void
   onDelete?: (fileId: string) => void
@@ -18,6 +19,7 @@ export function FileGrid({
   onFileClick,
   onToggleFavorite,
   onShare,
+  onEdit,
   onDownload,
   onCopyDownloadLink,
   onDelete,
@@ -49,6 +51,7 @@ export function FileGrid({
           onClick={() => onFileClick(file)}
           onToggleFavorite={() => onToggleFavorite(file.id)}
           onShare={onShare}
+          onEdit={onEdit}
           onDownload={onDownload}
           onCopyDownloadLink={onCopyDownloadLink}
           onDelete={onDelete}

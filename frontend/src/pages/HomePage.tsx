@@ -4,9 +4,10 @@ import { FileGrid, type FileItem } from "../components/FileGrid"
 import "../App.css"
 import "./HomePage.css"
 import FileUploadModal from "../components/FileUploadModal"
-import { searchFiles, deleteFile as apiDeleteFile, addToFavorites, removeFromFavorites, searchTags, setFileVisibility } from "../api/filesApi"
+import { searchFiles, deleteFile as apiDeleteFile, addToFavorites, removeFromFavorites, searchTags, setFileVisibility, updateFileMetadata } from "../api/filesApi"
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal"
 import ShareModal from "../components/ShareModal"
+import { EditFileModal } from "../components/EditFileModal"
 import { formatSize, getFileType } from "../utils/fileUtils"
 
 function App() {
@@ -26,6 +27,8 @@ function App() {
   const [isLoadingTags, setIsLoadingTags] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [selectedFileForShare, setSelectedFileForShare] = useState<FileItem | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedFileForEdit, setSelectedFileForEdit] = useState<FileItem | null>(null)
 
   useEffect(() => {
     if (showNotification) {
@@ -119,6 +122,38 @@ function App() {
       setSelectedFileForShare(file)
       setIsShareModalOpen(true)
     }
+  }
+
+  const handleEdit = (fileId: string) => {
+    const file = files.find(f => f.id === fileId)
+    if (file) {
+      setSelectedFileForEdit(file)
+      setIsEditModalOpen(true)
+    }
+  }
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false)
+    setSelectedFileForEdit(null)
+  }
+
+  const handleFileUpdated = (updatedFile: any) => {
+    if (!selectedFileForEdit) return;
+    
+    setFiles(files.map(f => 
+      f.id === selectedFileForEdit.id 
+        ? { 
+            ...f, 
+            name: updatedFile.name,
+            modifiedDate: updatedFile.updatedAt || updatedFile.createdAt
+          }
+        : f
+    ))
+    
+    setShowNotification(true)
+    setNotificationText("Файл успешно обновлен")
+    setIsEditModalOpen(false)
+    setSelectedFileForEdit(null)
   }
 
   const handleCopyDirectLink = (fileId: string) => {
@@ -392,6 +427,7 @@ function App() {
         onFileClick={handleFileClick}
         onToggleFavorite={handleToggleFavorite}
         onShare={handleShare}
+        onEdit={handleEdit}
         onDownload={handleDownload}
         onCopyDownloadLink={handleCopyDirectLink}
         onDelete={handleDelete}
@@ -421,6 +457,18 @@ function App() {
         onDeleteLink={handleDeleteShareLink}
         onVisibilityChange={handleVisibilityChange}
       />
+      {selectedFileForEdit && (
+        <EditFileModal
+          isOpen={isEditModalOpen}
+          onClose={handleEditModalClose}
+          file={{
+            id: selectedFileForEdit.id,
+            name: selectedFileForEdit.name,
+            description: ""
+          }}
+          onFileUpdated={handleFileUpdated}
+        />
+      )}
     </div>
   )
 }
