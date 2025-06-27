@@ -61,10 +61,44 @@ public class FileService
         return files.Select(f => MapToDto(f, userId)).ToList();
     }
 
-    public async Task<IReadOnlyList<FileDto>> SearchFilesAsync(string? searchTerm, Guid? userId, List<string>? tags, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileDto>> SearchFilesAsync(string? searchTerm, Guid userId, List<string>? tags, FileType fileType, CancellationToken cancellationToken = default)
     {
-        var files = await _fileRepository.SearchAsync(searchTerm, userId, tags, cancellationToken);
-        return files.Select(f => MapToDto(f, userId)).ToList();
+        IReadOnlyList<DriveFile> files;
+
+        switch (fileType)
+        {
+            case FileType.Own:
+                files = await _fileRepository.GetByOwnerIdAsync(userId, false, tags, cancellationToken);
+                break;
+            case FileType.Shared:
+                files = await _fileRepository.GetSharedWithUserAsync(userId, tags, cancellationToken);
+                break;
+            case FileType.Favorites:
+                files = await _fileRepository.GetFavoritesByUserIdAsync(userId, cancellationToken);
+                if (tags != null && tags.Any())
+                {
+                    var loweredTags = tags.Select(t => t.ToLower()).ToList();
+                    files = files.Where(f => loweredTags.All(tag => f.Tags.Any(t => t.Tag.Name.ToLower() == tag))).ToList();
+                }
+                break;
+            case FileType.All:
+            default:
+                var ownedFiles = await _fileRepository.GetByOwnerIdAsync(userId, false, tags, cancellationToken);
+                var sharedFiles = await _fileRepository.GetSharedWithUserAsync(userId, tags, cancellationToken);
+                files = ownedFiles.Concat(sharedFiles).DistinctBy(f => f.Id).ToList();
+                break;
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowered = searchTerm.ToLower();
+            files = files.Where(f => 
+                f.Name.ToLower().Contains(lowered) || 
+                (f.Description != null && f.Description.ToLower().Contains(lowered))
+            ).ToList();
+        }
+
+        return files.Select(f => MapToDto(f, userId)).OrderByDescending(f => f.UpdatedAt).ToList();
     }
 
     public async Task<FileDto> UploadFileAsync(string fileName, string? description, string contentType, byte[] content, Guid ownerId, CancellationToken cancellationToken = default)

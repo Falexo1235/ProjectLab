@@ -23,55 +23,10 @@ public class FilesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<FileDto>>> GetUserFiles(
-        [FromQuery] List<string>? tags,
-        CancellationToken cancellationToken = default)
-    {
-        var userId = GetUserId();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        try
-        {
-            var files = await _fileService.GetUserFilesAsync(userId.Value, tags, cancellationToken);
-            return Ok(files);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving user files for user {UserId}", userId);
-            return StatusCode(500, "Internal server error");
-        }
-    }
-
-    [HttpGet("shared")]
-    public async Task<ActionResult<IReadOnlyList<FileDto>>> GetSharedFiles(
-        [FromQuery] List<string>? tags,
-        CancellationToken cancellationToken = default)
-    {
-        var userId = GetUserId();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        try
-        {
-            var files = await _fileService.GetSharedFilesAsync(userId.Value, tags, cancellationToken);
-            return Ok(files);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving shared files for user {UserId}", userId);
-            return StatusCode(500, "Internal server error");
-        }
-    }
-
-    [HttpGet("search")]
     public async Task<ActionResult<IReadOnlyList<FileDto>>> SearchFiles(
-        [FromQuery] string? searchTerm,
-        [FromQuery] List<string>? tags,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] List<string>? tags = null,
+        [FromQuery] FileType fileType = FileType.All,
         CancellationToken cancellationToken = default)
     {
         var userId = GetUserId();
@@ -82,12 +37,12 @@ public class FilesController : ControllerBase
 
         try
         {
-            var files = await _fileService.SearchFilesAsync(searchTerm, userId, tags, cancellationToken);
+            var files = await _fileService.SearchFilesAsync(searchTerm, userId.Value, tags, fileType, cancellationToken);
             return Ok(files);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error searching files with term {SearchTerm}", searchTerm);
+            _logger.LogError(ex, "Error searching files for user {UserId}", userId);
             return StatusCode(500, "Internal server error");
         }
     }
