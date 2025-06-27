@@ -1,0 +1,6 @@
+@BoobleDrive.Api_HostAddress = http://localhost:5107
+
+GET http://localhost:5107/api/v1/Files
+Accept: application/json
+
+###
