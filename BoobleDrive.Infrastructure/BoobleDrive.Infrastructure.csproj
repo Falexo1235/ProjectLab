@@ -7,14 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6"/>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\BoobleDrive.Domain\BoobleDrive.Domain.csproj"/>
+        <ProjectReference Include="..\BoobleDrive.Domain\BoobleDrive.Domain.csproj" />
     </ItemGroup>
 
 </Project>
