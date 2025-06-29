@@ -5,7 +5,6 @@ import "./TextEditor.css"
 interface TextEditorProps {
   fileUrl: string
   fileName: string
-  isAuthorized: boolean
 }
 
 export default function TextEditor({ fileUrl, fileName }: TextEditorProps) {

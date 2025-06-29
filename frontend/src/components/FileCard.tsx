@@ -12,7 +12,6 @@ export interface FileItem {
   tags: string[]
   thumbnail?: string
   url?: string
-  accessLevel?: "public" | "private" | "shared"
 }
 
 interface FileCardProps {
@@ -24,7 +23,6 @@ interface FileCardProps {
   onDownload?: (fileId: string) => void
   onCopyDownloadLink?: (fileId: string) => void
   onDelete?: (fileId: string) => void
-  onAccessLevelChange?: (fileId: string, newLevel: "public" | "private" | "shared") => void
 }
 
 export function FileCard({
@@ -36,7 +34,6 @@ export function FileCard({
   onDownload,
   onCopyDownloadLink,
   onDelete,
-  onAccessLevelChange,
 }: FileCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -143,13 +140,6 @@ export function FileCard({
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onDelete?.(file.id)
-    setIsMenuOpen(false)
-  }
-
-  const handleAccessChangeClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    const newLevel = file.accessLevel === "public" ? "private" : "public"
-    onAccessLevelChange?.(file.id, newLevel)
     setIsMenuOpen(false)
   }
 

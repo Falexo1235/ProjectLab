@@ -4,16 +4,17 @@ import { FileGrid, type FileItem } from "../components/FileGrid"
 import "../App.css"
 import "./HomePage.css"
 import FileUploadModal from "../components/FileUploadModal"
-import { searchFiles, deleteFile as apiDeleteFile, addToFavorites, removeFromFavorites, searchTags, setFileVisibility, updateFileMetadata } from "../api/filesApi"
+import { searchFiles, deleteFile as apiDeleteFile, addToFavorites, removeFromFavorites, searchTags, updateFileMetadata } from "../api/filesApi"
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal"
 import ShareModal from "../components/ShareModal"
 import { EditFileModal } from "../components/EditFileModal"
 import { formatSize, getFileType } from "../utils/fileUtils"
+import { getApiUrl } from "../config/api"
 
 function App() {
   const [files, setFiles] = useState<FileItem[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [fileType, setFileType] = useState("all")
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [tagSearch, setTagSearch] = useState("")
   const [includedTags, setIncludedTags] = useState<string[]>([])
   const [showNotification, setShowNotification] = useState(false)
@@ -51,9 +52,8 @@ function App() {
         modifiedDate: f.updatedAt || f.createdAt,
         isFavorite: f.isFavorite || false,
         tags: f.tags || [],
-        accessLevel: f.visibility === "Public" ? "public" : f.visibility === "Shared" ? "shared" : "private",
         url: `http://localhost:5107/api/v1/Files/${f.id}/download`,
-        thumbnail: f.contentType && f.contentType.startsWith("image/") ? `http://localhost:5107/api/v1/Files/${f.id}/thumbnail` : undefined,
+        thumbnail: `http://localhost:5107/api/v1/Thumbnail/${f.id}`,
       }))
       setFiles(files)
     } catch (e) {
@@ -167,7 +167,7 @@ function App() {
     if (!selectedFileForShare) return { url: "" };
     
     try {
-      const mockUrl = `/p/mock-token-${Date.now()}`
+      const mockUrl = `/pub/mock-token-${Date.now()}`
       setShowNotification(true)
       setNotificationText("Публичная ссылка скопирована!")
       return { url: mockUrl };
@@ -185,35 +185,6 @@ function App() {
       setNotificationText("Публичная ссылка удалена");
     } catch (e) {
       setError("Ошибка при удалении ссылки");
-    }
-  }
-
-  const handleVisibilityChange = async (visibility: "Private" | "Shared" | "Public") => {
-    if (!selectedFileForShare) return;
-    
-    try {
-      await setFileVisibility(selectedFileForShare.id, visibility)
-      setShowNotification(true)
-      setNotificationText("Видимость файла изменена");
-      
-      const accessLevelMap: Record<"Private" | "Shared" | "Public", "public" | "private" | "shared"> = {
-        "Private": "private",
-        "Shared": "shared", 
-        "Public": "public"
-      };
-      
-      setFiles(files.map(f => 
-        f.id === selectedFileForShare.id 
-          ? { ...f, accessLevel: accessLevelMap[visibility] }
-          : f
-      ))
-      
-      setSelectedFileForShare(prev => prev ? {
-        ...prev,
-        accessLevel: accessLevelMap[visibility]
-      } : null)
-    } catch (e) {
-      setError("Ошибка при изменении видимости");
     }
   }
 
@@ -245,12 +216,6 @@ function App() {
     }
   }
 
-  const handleAccessLevelChange = (fileId: string, newLevel: "public" | "private" | "shared") => {
-    setFiles((prevFiles) =>
-      prevFiles.map((f) => (f.id === fileId ? { ...f, accessLevel: newLevel } : f)),
-    )
-  }
-
   const handleFileClick = (file: FileItem) => {
     navigate(`/file/${file.id}`)
   }
@@ -270,7 +235,7 @@ function App() {
       const data = await searchFiles({ 
         searchTerm: searchQuery.trim(), 
         tags: includedTags,
-        fileType: fileType
+        fileType: showFavoritesOnly ? "favorites" : "all"
       });
       const files: FileItem[] = data.map((f: any) => ({
         id: f.id,
@@ -280,9 +245,8 @@ function App() {
         modifiedDate: f.updatedAt || f.createdAt,
         isFavorite: f.isFavorite || false,
         tags: f.tags || [],
-        accessLevel: f.visibility === "Public" ? "public" : f.visibility === "Shared" ? "shared" : "private",
-        url: `http://localhost:5107/api/v1/Files/${f.id}/download`,
-        thumbnail: f.contentType && f.contentType.startsWith("image/") ? `http://localhost:5107/api/v1/Files/${f.id}/thumbnail` : undefined,
+        url: getApiUrl(`/api/v1/Files/${f.id}/download`),
+        thumbnail: getApiUrl(`/api/v1/Thumbnail/${f.id}`),
       }))
       setFiles(files)
     } catch (e) {
@@ -333,8 +297,8 @@ function App() {
         </div>
 
         <div className="search-panel">
-          <div className="search-row">
-            <div className="search-input-container" style={{ position: 'relative' }}>
+          <div className="search-row" style={{ display: 'flex', alignItems: 'center' }}>
+            <div className="search-input-container" style={{ position: 'relative', flex: 1 }}>
               <input
                 type="text"
                 placeholder="Поиск файлов..."
@@ -359,22 +323,27 @@ function App() {
                 />
               </button>
             </div>
+            <label style={{ display: 'flex', alignItems: 'center', marginLeft: 16, cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={showFavoritesOnly}
+                onChange={e => setShowFavoritesOnly(e.target.checked)}
+                style={{ marginRight: 6 }}
+              />
+              <img
+                src="/src/assets/icons/star1.png"
+                alt="Избранные"
+                style={{ width: 20, height: 20, verticalAlign: 'middle' }}
+                onError={e => { e.currentTarget.src = "/placeholder.svg?height=20&width=20" }}
+              />
+              <span style={{ marginLeft: 4 }}>Избранные</span>
+            </label>
           </div>
 
           <div className="separator"></div>
 
-          <div className="filters-grid">
-            <div className="filter-group">
-              <label className="filter-label">Тип файла</label>
-              <select value={fileType} onChange={(e) => setFileType(e.target.value)} className="filter-select">
-                <option value="all">Все</option>
-                <option value="own">Свои</option>
-                <option value="shared">Общие</option>
-                <option value="favorites">Избранные</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
+          <div className="filters-grid" style={{ gridTemplateColumns: '1fr' }}>
+            <div className="filter-group" style={{ width: '100%' }}>
               <label className="filter-label">Поиск по тегам</label>
               <input
                 type="text"
@@ -431,7 +400,6 @@ function App() {
         onDownload={handleDownload}
         onCopyDownloadLink={handleCopyDirectLink}
         onDelete={handleDelete}
-        onAccessLevelChange={handleAccessLevelChange}
         emptyMessage="Файлы не найдены"
       />
       <ConfirmDeleteModal
@@ -448,14 +416,8 @@ function App() {
         }}
         fileId={selectedFileForShare?.id || ""}
         fileName={selectedFileForShare?.name || ""}
-        currentVisibility={
-          selectedFileForShare?.accessLevel === "public" ? "Public" : 
-          selectedFileForShare?.accessLevel === "shared" ? "Shared" : 
-          "Private"
-        }
         onCreateLink={handleCreateShareLink}
         onDeleteLink={handleDeleteShareLink}
-        onVisibilityChange={handleVisibilityChange}
       />
       {selectedFileForEdit && (
         <EditFileModal

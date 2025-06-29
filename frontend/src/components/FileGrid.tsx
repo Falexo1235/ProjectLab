@@ -10,7 +10,6 @@ interface FileGridProps {
   onDownload?: (fileId: string) => void
   onCopyDownloadLink?: (fileId: string) => void
   onDelete?: (fileId: string) => void
-  onAccessLevelChange?: (fileId: string, newLevel: "public" | "private" | "shared") => void
   emptyMessage?: string
 }
 
@@ -23,7 +22,6 @@ export function FileGrid({
   onDownload,
   onCopyDownloadLink,
   onDelete,
-  onAccessLevelChange,
   emptyMessage = "Файлы не найдены",
 }: FileGridProps) {
   if (files.length === 0) {
@@ -55,7 +53,6 @@ export function FileGrid({
           onDownload={onDownload}
           onCopyDownloadLink={onCopyDownloadLink}
           onDelete={onDelete}
-          onAccessLevelChange={onAccessLevelChange}
         />
       ))}
     </div>

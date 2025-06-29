@@ -6,12 +6,13 @@ import "./FileViewer.css"
 import TextEditor from "../components/TextEditor"
 import PDFViewer from "../components/PDFViewer"
 import DocxViewer from "../components/DocxViewer"
-import { getFile, downloadFile, deleteFile as apiDeleteFile, updateFileTags as apiUpdateFileTags, addToFavorites, removeFromFavorites, searchTags, createShareLink, deleteShareLink, setFileVisibility } from "../api/filesApi"
+import { getFile, downloadFile, deleteFile as apiDeleteFile, updateFileTags as apiUpdateFileTags, addToFavorites, removeFromFavorites, searchTags, createShareLink, deleteShareLink } from "../api/filesApi"
 import React from "react"
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal"
 import ShareModal from "../components/ShareModal"
 import { EditFileModal } from "../components/EditFileModal"
 import { formatSize, formatDuration, getFileType, getStarIcon } from "../utils/fileUtils"
+import { getApiUrl } from "../config/api"
 
 interface FileData {
   id: string
@@ -30,19 +31,21 @@ interface FileData {
     bitrate?: string
     format?: string
   }
-  accessLevel: "public" | "private" | "shared"
   description?: string
 }
 
-export default function FileViewer() {
-  const { id } = useParams<{ id: string }>()
+interface FileViewerProps {
+  isPublic?: boolean;
+}
+
+export default function FileViewer({ isPublic = false }: FileViewerProps) {
+  const { id, token } = useParams<{ id?: string; token?: string }>()
   const navigate = useNavigate()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [file, setFile] = useState<FileData | undefined>(undefined)
   const [error, setError] = useState("")
   const [fileUrl, setFileUrl] = useState<string | undefined>(undefined)
-  const isAuthorized = true // Placeholder for admin state
   const [mediaInfo, setMediaInfo] = useState<{ width?: number; height?: number; duration?: number }>({})
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
@@ -57,11 +60,19 @@ export default function FileViewer() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!id) return
+    if (isPublic && !token) return;
+    if (!isPublic && !id) return;
     const fetchFile = async () => {
       setError("")
       try {
-        const f = await getFile(id);
+        let f;
+        if (isPublic) {
+          const resp = await fetch(getApiUrl(`/p/${token}`));
+          if (!resp.ok) throw new Error("Файл не найден или ссылка неактивна");
+          f = await resp.json();
+        } else {
+          f = await getFile(id!);
+        }
         const fileData: FileData = {
           id: f.id,
           name: f.name,
@@ -70,8 +81,7 @@ export default function FileViewer() {
           modifiedDate: f.updatedAt || f.createdAt,
           isFavorite: f.isFavorite || false,
           tags: f.tags || [],
-          url: `http://localhost:5107/api/v1/Files/${f.id}/download`,
-          accessLevel: f.visibility === "Public" ? "public" : f.visibility === "Shared" ? "shared" : "private",
+          url: isPublic ? getApiUrl(`/p/${token}/download`) : getApiUrl(`/api/v1/Files/${f.id}/download`),
           description: f.description,
         }
         setFile(fileData)
@@ -81,7 +91,7 @@ export default function FileViewer() {
       }
     }
     fetchFile()
-  }, [id])
+  }, [id, token, isPublic])
 
   useEffect(() => {
     if (!file) return
@@ -89,7 +99,14 @@ export default function FileViewer() {
     setFileUrl(undefined)
     const fetchBlob = async () => {
       try {
-        const blob = await downloadFile(file.url);
+        let blob;
+        if (isPublic) {
+          const resp = await fetch(file.url)
+          if (!resp.ok) throw new Error()
+          blob = await resp.blob()
+        } else {
+          blob = await downloadFile(file.url)
+        }
         if (!revoked) setFileUrl(URL.createObjectURL(blob))
       } catch {
         if (!revoked) setFileUrl(undefined)
@@ -238,9 +255,6 @@ export default function FileViewer() {
       setTagInput("");
       setTagSuggestions([]);
     }
-    if (e.key === "Backspace" && !tagInput && editTags.length > 0) {
-      setEditTags(editTags.slice(0, -1));
-    }
   };
 
   const handleRemoveTag = (tag: string) => {
@@ -298,19 +312,21 @@ export default function FileViewer() {
     }
   };
 
-  const handleVisibilityChange = async (visibility: "Private" | "Shared" | "Public") => {
-    if (!file) return;
-    
-    try {
-      await setFileVisibility(file.id, visibility)
-      setShowNotification(true)
-      setNotificationText("Видимость файла изменена");
-      
-      setFile({ ...file, accessLevel: visibility === "Public" ? "public" : visibility === "Shared" ? "shared" : "private" })
-    } catch (e) {
-      setError("Ошибка при изменении видимости");
+  const handleShareClick = () => {
+    if (isPublic) {
+      navigator.clipboard.writeText(window.location.href.replace('/p/', '/pub/'))
+        .then(() => {
+          setNotificationText("Ссылка скопирована!");
+          setShowNotification(true);
+        })
+        .catch(() => {
+          setNotificationText("Не удалось скопировать ссылку");
+          setShowNotification(true);
+        });
+    } else {
+      handleShare();
     }
-  }
+  };
 
   if (!file) {
     return (
@@ -327,9 +343,11 @@ export default function FileViewer() {
             />
             <h1>Файл не найден</h1>
             <p>Файл с ID "{id}" не существует или был удален.</p>
+            {!isPublic && (
             <button onClick={() => navigate("/")} className="back-button">
               Вернуться к списку файлов
             </button>
+            )}
           </div>
         </div>
       </div>
@@ -437,7 +455,6 @@ export default function FileViewer() {
             <TextEditor 
               fileUrl={fileUrl}
               fileName={file.name}
-              isAuthorized={isAuthorized}
             />
           </div>
         )
@@ -471,21 +488,49 @@ export default function FileViewer() {
       )}
       <div className="file-viewer-content">
         <div className="file-viewer-header">
+          {!isPublic && (
           <button onClick={() => navigate("/")} className="back-button">
             ← Назад к файлам
           </button>
+          )}
           <div className="file-actions">
-            <button onClick={handleShare} className="action-button share-button">
+            <button onClick={handleShareClick} className="action-button share-button">
               <img
                 src="/src/assets/icons/share.png"
                 alt="Share"
                 className="action-icon"
                 onError={(e) => {
-                  e.currentTarget.src = "/placeholder.svg?height=16&width=16"
+                  e.currentTarget.src = "/placeholder.svg?height=20&width=20"
                 }}
               />
               Поделиться
             </button>
+            {isPublic && (
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(file.url)
+                    .then(() => {
+                      setNotificationText("Прямая ссылка скопирована!");
+                      setShowNotification(true);
+                    })
+                    .catch(() => {
+                      setNotificationText("Не удалось скопировать ссылку");
+                      setShowNotification(true);
+                    });
+                }}
+                className="action-button share-button"
+              >
+                <img
+                  src="/src/assets/icons/link.png"
+                  alt="Direct link"
+                  className="action-icon"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg?height=20&width=20"
+                  }}
+                />
+                Прямая ссылка
+              </button>
+            )}
             <button onClick={handleDownload} className="action-button download-button">
               <img
                 src="/src/assets/icons/download.png"
@@ -505,7 +550,7 @@ export default function FileViewer() {
             <div className="file-title-container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <h2 className="file-title">{file.name}</h2>
-                {isAuthorized && (
+                {!isPublic && (
                   <button className="viewer-favorite-button" onClick={handleToggleFavorite}>
                     <img
                       src={getStarIcon(file.isFavorite)}
@@ -519,17 +564,20 @@ export default function FileViewer() {
                 )}
               </div>
               <div className="file-actions-menu" ref={menuRef} style={{ position: "relative" }}>
+                {!isPublic && (
+                  <>
                 <button className="menu-toggle-button" onClick={handleMenuToggle}>
                   •••
                 </button>
                 {isMenuOpen && (
                   <div className="context-menu" style={{ right: 0, left: "auto", minWidth: 160 }}>
-                    <button onClick={handleDownload}>Скачать</button>
                     <button onClick={handleEditFile}>Редактировать</button>
                     <button onClick={handleEditTags}>Изменить теги</button>
                     <div className="menu-separator"></div>
                     <button onClick={handleDelete} className="delete-button">Удалить</button>
                   </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -582,18 +630,6 @@ export default function FileViewer() {
                       <span className="metadata-value">{formatDuration(mediaInfo.duration)}</span>
                     </div>
                   )}
-                </div>
-              </div>
-            )}
-            {isAuthorized && (
-              <div className="file-metadata file-access-metadata">
-                <div className="metadata-list">
-                  <div className="metadata-item">
-                    <span className="metadata-label">Уровень доступа:</span>
-                    <span className="metadata-value">
-                      {file.accessLevel === "public" ? "Публичный" : file.accessLevel === "shared" ? "По ссылке" : "Приватный"}
-                    </span>
-                  </div>
                 </div>
               </div>
             )}
@@ -679,12 +715,10 @@ export default function FileViewer() {
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        fileId={file?.id || ""}
-        fileName={file?.name || ""}
-        currentVisibility={file?.accessLevel === "public" ? "Public" : file?.accessLevel === "shared" ? "Shared" : "Private"}
+        fileId={file.id}
+        fileName={file.name}
         onCreateLink={handleCreateShareLink}
         onDeleteLink={handleDeleteShareLink}
-        onVisibilityChange={handleVisibilityChange}
       />
       {file && (
         <EditFileModal

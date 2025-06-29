@@ -1,3 +1,5 @@
+import { getApiUrl } from "../config/api"
+
 export async function fetchWithAuth(input: RequestInfo, init?: RequestInit): Promise<Response> {
   let token = localStorage.getItem('token');
   let refreshToken = localStorage.getItem('refreshToken');
@@ -11,7 +13,7 @@ export async function fetchWithAuth(input: RequestInfo, init?: RequestInit): Pro
     handleLogout();
     throw new Error('Session expired');
   }
-  const refreshResp = await fetch('http://localhost:5107/api/v1/Users/refresh-token', {
+  const refreshResp = await fetch(getApiUrl('/api/v1/Users/refresh-token'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, refreshToken })

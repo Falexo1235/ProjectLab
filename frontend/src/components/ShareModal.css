@@ -99,60 +99,6 @@
   font-size: 14px;
 }
 
-.visibility-options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.visibility-option {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--border-secondary);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background-color: var(--bg-primary);
-}
-
-.visibility-option:hover {
-  border-color: var(--accent-primary);
-  background-color: var(--bg-secondary);
-}
-
-.visibility-option input[type="radio"] {
-  margin: 0;
-  margin-top: 2px;
-  accent-color: var(--accent-primary);
-}
-
-.visibility-option input[type="radio"]:checked + .visibility-label {
-  color: var(--accent-primary);
-}
-
-.visibility-label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  font-weight: 500;
-  color: var(--text-primary);
-  transition: color 0.2s;
-}
-
-.visibility-icon {
-  font-size: 16px;
-  margin-right: 8px;
-}
-
-.visibility-description {
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: normal;
-}
-
 .share-form {
   display: flex;
   flex-direction: column;
@@ -258,45 +204,29 @@
   }
 }
 
-.visibility-select-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.share-link-info {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  font-size: 14px;
 }
 
-.visibility-select-container .filter-select {
-  flex: 1;
-  min-width: 200px;
+.share-link-info span {
+  display: block;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
-.copy-direct-link-button {
-  padding: 8px;
-  border: 1px solid var(--border-secondary);
-  border-radius: 6px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+.share-link-info a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  word-break: break-all;
+  line-height: 1.4;
 }
 
-.copy-direct-link-button:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-  border-color: var(--accent-primary);
-}
-
-.copy-direct-link-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.copy-link-icon {
-  width: 16px;
-  height: 16px;
-  opacity: 0.8;
+.share-link-info a:hover {
+  text-decoration: underline;
 } 

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { getApiUrl } from "../config/api"
 import "./LoginPage.css"
 
 export default function LoginPage() {
@@ -14,7 +15,7 @@ export default function LoginPage() {
     setError("")
     setLoading(true)
     try {
-      const response = await fetch("http://localhost:5107/api/v1/Users/login", {
+      const response = await fetch(getApiUrl("/api/v1/Users/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })

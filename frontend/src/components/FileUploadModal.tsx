@@ -1,5 +1,6 @@
 import { useRef, useState } from "react"
 import "./FileUploadModal.css"
+import { getApiUrl } from "../config/api"
 
 interface FileUploadModalProps {
   isOpen: boolean
@@ -11,16 +12,32 @@ export default function FileUploadModal({ isOpen, onClose, onUploadSuccess }: Fi
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [name, setName] = useState("")
+  const [extension, setExtension] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   if (!isOpen) return null
 
+  const splitFileName = (fullName: string) => {
+    const lastDotIndex = fullName.lastIndexOf('.')
+    if (lastDotIndex === -1) {
+      return { name: fullName, extension: '' }
+    }
+    return {
+      name: fullName.substring(0, lastDotIndex),
+      extension: fullName.substring(lastDotIndex)
+    }
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] || null
     setFile(f)
-    if (f) setName(f.name)
+    if (f) {
+      const { name, extension } = splitFileName(f.name)
+      setName(name)
+      setExtension(extension)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,14 +47,18 @@ export default function FileUploadModal({ isOpen, onClose, onUploadSuccess }: Fi
       setError("Выберите файл для загрузки.")
       return
     }
+    if (!name.trim()) {
+      setError("Название файла не может быть пустым.")
+      return
+    }
     setLoading(true)
     try {
       const formData = new FormData()
       formData.append("File", file)
-      if (name) formData.append("Name", name)
+      formData.append("Name", name.trim() + extension)
       if (description) formData.append("Description", description)
       const token = localStorage.getItem("token")
-      const response = await fetch("http://localhost:5107/api/v1/Files/upload", {
+      const response = await fetch(getApiUrl("/api/v1/Files/upload"), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
@@ -54,6 +75,7 @@ export default function FileUploadModal({ isOpen, onClose, onUploadSuccess }: Fi
       onClose()
       setFile(null)
       setName("")
+      setExtension("")
       setDescription("")
     } catch (e) {
       setError("Ошибка сети. Попробуйте позже.")
@@ -74,14 +96,17 @@ export default function FileUploadModal({ isOpen, onClose, onUploadSuccess }: Fi
             className="upload-input"
             disabled={loading}
           />
+          <div className="upload-name-container">
           <input
             type="text"
             placeholder="Имя файла"
             value={name}
             onChange={e => setName(e.target.value)}
-            className="upload-input"
+              className="upload-input upload-name-input"
             disabled={loading}
           />
+            <span className="upload-extension">{extension}</span>
+          </div>
           <textarea
             placeholder="Описание (необязательно)"
             value={description}

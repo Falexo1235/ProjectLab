@@ -10,6 +10,7 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/file/:id" element={<FileViewer />} />
+      <Route path="/pub/:token" element={<FileViewer isPublic={true} />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
     </Routes>

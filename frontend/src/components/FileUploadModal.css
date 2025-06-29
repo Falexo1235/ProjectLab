@@ -90,4 +90,28 @@
 .upload-submit:disabled {
   background: #b3cdf6;
   cursor: not-allowed;
+}
+
+.upload-name-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-name-input {
+  flex: 1;
+}
+
+.upload-extension {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-secondary);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 1em;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: center;
+  user-select: none;
 } 
