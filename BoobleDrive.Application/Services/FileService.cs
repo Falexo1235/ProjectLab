@@ -338,20 +338,21 @@ public class FileService
 
     public async Task<byte[]?> GetThumbnailAsync(Guid fileId, Guid? userId, CancellationToken cancellationToken)
     {
-        var file = await _fileRepository.GetByIdAsync(fileId, cancellationToken);
+        var file = await _fileRepository.GetByIdWithVersionsAsync(fileId, cancellationToken);
         if (file == null || file.IsDeleted)
         {
             return null;
         }
 
-        if (file.Visibility != FileVisibility.Public && !file.CanAccess(userId ?? Guid.Empty, FilePermission.Read))
-        {
-            throw new UnauthorizedAccessException("Access denied or file not found.");
-        }
+        
+        
+        
+        
+        
 
         if (file.ContentType.IsImage)
         {
-            var content = await DownloadFileAsync(fileId, userId ?? file.OwnerId, cancellationToken);
+            var content = file.CurrentVersion.Content;
             if (content == null)
             {
                 return null;
@@ -370,7 +371,7 @@ public class FileService
         }
         else if (file.ContentType.IsVideo)
         {
-            var content = await DownloadFileAsync(fileId, userId ?? file.OwnerId, cancellationToken);
+            var content = file.CurrentVersion.Content;
             if (content == null)
             {
                 return null;
