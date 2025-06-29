@@ -189,12 +189,16 @@ public class FileRepository : IFileRepository
 
     public async Task<IReadOnlyList<DriveFile>> GetFavoritesByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _context.Files
+        var files = await _context.Files
             .Include(f => f.Owner)
             .Include(f => f.Tags).ThenInclude(t => t.Tag)
-            .Where(f => f.DeletedAt == null && f.FavoritedBy.Contains(userId))
-            .OrderByDescending(f => f.UpdatedAt)
+            .Where(f => f.DeletedAt == null)
             .ToListAsync(cancellationToken);
+
+        return files
+            .Where(f => f.FavoritedBy.Contains(userId))
+            .OrderByDescending(f => f.UpdatedAt)
+            .ToList();
     }
 
     public async Task<DriveFile?> GetByPublicTokenAsync(string token, CancellationToken cancellationToken = default)
