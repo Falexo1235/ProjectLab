@@ -127,15 +127,16 @@ public class FileRepository : IFileRepository
             query = query.Where(f => loweredTags.All(tag => f.Tags.Any(t => t.Tag.Name.ToLower() == tag)));
         }
 
-        if (userId.HasValue)
-        {
-            query = query.Where(f => f.OwnerId == userId.Value || f.Visibility == FileVisibility.Public ||
-                f.Shares.Any(s => s.UserId == userId.Value && (s.ExpiresAt == null || s.ExpiresAt > DateTime.UtcNow)));
-        }
-        else
-        {
-            query = query.Where(f => f.Visibility == FileVisibility.Public);
-        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
         return await query.OrderByDescending(f => f.UpdatedAt).ToListAsync(cancellationToken);
     }
@@ -192,20 +193,19 @@ public class FileRepository : IFileRepository
             .Include(f => f.Owner)
             .Include(f => f.Tags).ThenInclude(t => t.Tag)
             .Where(f => f.DeletedAt == null && f.FavoritedBy.Contains(userId))
-            .Where(f => f.OwnerId == userId || f.Visibility == FileVisibility.Public ||
-                f.Shares.Any(s => s.UserId == userId && (s.ExpiresAt == null || s.ExpiresAt > DateTime.UtcNow)))
             .OrderByDescending(f => f.UpdatedAt)
             .ToListAsync(cancellationToken);
     }
 
     public async Task<DriveFile?> GetByPublicTokenAsync(string token, CancellationToken cancellationToken = default)
     {
+        var now = DateTime.UtcNow;
         return await _context.Files
             .Include(f => f.Owner)
             .Include(f => f.Tags).ThenInclude(t => t.Tag)
             .Include(f => f.PublicLinks)
             .Include(f => f.Versions)
-            .Where(f => f.DeletedAt == null && f.PublicLinks.Any(pl => pl.Token == token && pl.IsActive))
+            .Where(f => f.DeletedAt == null && f.PublicLinks.Any(pl => pl.Token == token && (pl.ExpiresAt == null || pl.ExpiresAt > now)))
             .FirstOrDefaultAsync(cancellationToken);
     }
 }

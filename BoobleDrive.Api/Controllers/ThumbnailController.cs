@@ -1,4 +1,5 @@
 using BoobleDrive.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -46,6 +47,7 @@ public class ThumbnailController : ControllerBase
     }
 
     [HttpGet("public/{token}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetPublicThumbnail(
         string token,
         CancellationToken cancellationToken = default)

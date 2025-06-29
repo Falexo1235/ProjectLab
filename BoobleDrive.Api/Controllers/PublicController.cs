@@ -1,12 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using BoobleDrive.Application.DTOs;
 using BoobleDrive.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoobleDrive.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[AllowAnonymous]
 public class PublicController : ControllerBase
 {
     private readonly FileService _fileService;

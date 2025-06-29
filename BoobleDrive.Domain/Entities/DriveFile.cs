@@ -205,7 +205,8 @@ public class DriveFile
             return true;
         }
 
-        if (Visibility == FileVisibility.Public && requiredPermission == FilePermission.Read)
+        
+        if (requiredPermission == FilePermission.Read)
         {
             return true;
         }
@@ -222,7 +223,7 @@ public class DriveFile
         }
 
         OwnerId = newOwnerId;
-        // When ownership changes, revoke all existing shares for safety.
+        
         _shares.Clear();
         UpdatedAt = DateTime.UtcNow;
     }
