@@ -18,7 +18,7 @@ builder.Services.AddOpenApi();
 
 
 builder.Services.AddDbContext<BoobleDriveDbContext>(options =>
-    options.UseInMemoryDatabase("BoobleDriveDb"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
@@ -101,7 +101,7 @@ if (app.Environment.IsDevelopment())
 
     try
     {
-        await context.Database.EnsureCreatedAsync();
+        await context.Database.MigrateAsync();
 
 
         var users = await context.Users.AnyAsync();
