@@ -53,10 +53,6 @@ public class FilesController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var userId = GetUserId();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
 
         try
         {
@@ -86,10 +82,6 @@ public class FilesController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var userId = GetUserId();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
 
         try
         {
@@ -99,7 +91,7 @@ public class FilesController : ControllerBase
                 return NotFound("File not found");
             }
 
-            var content = await _fileService.DownloadFileAsync(fileId, userId.Value, cancellationToken);
+            var content = await _fileService.DownloadFileAsync(fileId, userId ?? Guid.Empty, cancellationToken);
             if (content == null)
             {
                 return NotFound("File content not found");
@@ -440,61 +432,7 @@ public class FilesController : ControllerBase
         }
     }
 
-    [HttpGet("{fileId:guid}/thumbnail")]
-    public async Task<IActionResult> GetThumbnail(
-        Guid fileId,
-        CancellationToken cancellationToken = default)
-    {
-        var userId = GetUserId();
 
-        try
-        {
-            var thumbnailContent = await _fileService.GetThumbnailAsync(fileId, userId, cancellationToken);
-            if (thumbnailContent == null)
-            {
-                return NotFound("Thumbnail not available.");
-            }
-
-            return File(thumbnailContent, "image/jpeg");
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Forbid("Access denied");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting thumbnail for file {FileId}", fileId);
-            return StatusCode(500, "Internal server error");
-        }
-    }
-
-    [HttpGet("{fileId:guid}/preview")]
-    public async Task<IActionResult> GetPreview(
-        Guid fileId,
-        CancellationToken cancellationToken = default)
-    {
-        var userId = GetUserId();
-
-        try
-        {
-            var (previewContent, contentType) = await _fileService.GetPreviewAsync(fileId, userId, cancellationToken);
-            if (previewContent == null)
-            {
-                return NotFound("Preview not available.");
-            }
-
-            return File(previewContent, contentType);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Forbid("Access denied");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting preview for file {FileId}", fileId);
-            return StatusCode(500, "Internal server error");
-        }
-    }
 
     [HttpPut("{fileId:guid}/tags")]
     public async Task<IActionResult> UpdateTags(

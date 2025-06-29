@@ -197,4 +197,15 @@ public class FileRepository : IFileRepository
             .OrderByDescending(f => f.UpdatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<DriveFile?> GetByPublicTokenAsync(string token, CancellationToken cancellationToken = default)
+    {
+        return await _context.Files
+            .Include(f => f.Owner)
+            .Include(f => f.Tags).ThenInclude(t => t.Tag)
+            .Include(f => f.PublicLinks)
+            .Include(f => f.Versions)
+            .Where(f => f.DeletedAt == null && f.PublicLinks.Any(pl => pl.Token == token && pl.IsActive))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

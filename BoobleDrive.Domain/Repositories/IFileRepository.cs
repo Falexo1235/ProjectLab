@@ -23,4 +23,5 @@ public interface IFileRepository
     Task<bool> ExistsByHashAsync(string hash, CancellationToken cancellationToken = default);
     Task<bool> CanUserAccessAsync(Guid fileId, Guid userId, FilePermission permission, CancellationToken cancellationToken = default);
     Task<long> GetTotalSizeByOwnerAsync(Guid ownerId, CancellationToken cancellationToken = default);
+    Task<DriveFile?> GetByPublicTokenAsync(string token, CancellationToken cancellationToken = default);
 }

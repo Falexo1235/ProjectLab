@@ -30,6 +30,8 @@ public class MimeType : IEquatable<MimeType>
     public bool IsImage => Category == "image";
     public bool IsDocument => Category == "application" || Category == "text";
     public bool IsMedia => Category == "audio" || Category == "video";
+    public bool IsVideo => Category == "video";
+    public bool IsAudio => Category == "audio";
 
     public bool Equals(MimeType? other)
     {

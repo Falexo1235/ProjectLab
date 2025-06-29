@@ -7,15 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Services\"/>
+        <Folder Include="Services\" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\BoobleDrive.Domain\BoobleDrive.Domain.csproj"/>
+        <ProjectReference Include="..\BoobleDrive.Domain\BoobleDrive.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10"/>
+        <PackageReference Include="FFMpegCore" Version="5.2.0" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
     </ItemGroup>
 
 </Project>

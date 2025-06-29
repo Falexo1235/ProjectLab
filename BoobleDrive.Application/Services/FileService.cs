@@ -7,6 +7,8 @@ using BoobleDrive.Domain.Services;
 using BoobleDrive.Domain.ValueObjects;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using FFMpegCore;
+using FFMpegCore.Enums;
 
 namespace BoobleDrive.Application.Services;
 
@@ -41,7 +43,7 @@ public class FileService
             return null;
         }
 
-        if (userId.HasValue && !file.CanAccess(userId.Value, FilePermission.Read))
+        if (file.Visibility != FileVisibility.Public && !file.CanAccess(userId ?? Guid.Empty, FilePermission.Read))
         {
             return null;
         }
@@ -142,7 +144,7 @@ public class FileService
             return null;
         }
 
-        if (!file.CanAccess(userId, FilePermission.Read))
+        if (file.Visibility != FileVisibility.Public && !file.CanAccess(userId, FilePermission.Read))
         {
             throw new UnauthorizedAccessException("Access denied");
         }
@@ -337,38 +339,12 @@ public class FileService
     public async Task<byte[]?> GetThumbnailAsync(Guid fileId, Guid? userId, CancellationToken cancellationToken)
     {
         var file = await _fileRepository.GetByIdAsync(fileId, cancellationToken);
-        if (file == null || !file.CanAccess(userId ?? Guid.Empty, FilePermission.Read))
-        {
-            throw new UnauthorizedAccessException("Access denied or file not found.");
-        }
-
-        if (!file.ContentType.IsImage)
+        if (file == null || file.IsDeleted)
         {
             return null;
         }
 
-        var content = await DownloadFileAsync(fileId, userId ?? file.OwnerId, cancellationToken);
-        if (content == null)
-        {
-            return null;
-        }
-
-        using var image = Image.Load(content);
-        image.Mutate(x => x.Resize(new ResizeOptions
-        {
-            Size = new Size(100, 100),
-            Mode = ResizeMode.Crop
-        }));
-
-        using var ms = new MemoryStream();
-        await image.SaveAsJpegAsync(ms, cancellationToken);
-        return ms.ToArray();
-    }
-
-    public async Task<(byte[] content, string contentType)> GetPreviewAsync(Guid fileId, Guid? userId, CancellationToken cancellationToken)
-    {
-        var file = await _fileRepository.GetByIdAsync(fileId, cancellationToken);
-        if (file == null || !file.CanAccess(userId ?? Guid.Empty, FilePermission.Read))
+        if (file.Visibility != FileVisibility.Public && !file.CanAccess(userId ?? Guid.Empty, FilePermission.Read))
         {
             throw new UnauthorizedAccessException("Access denied or file not found.");
         }
@@ -378,14 +354,65 @@ public class FileService
             var content = await DownloadFileAsync(fileId, userId ?? file.OwnerId, cancellationToken);
             if (content == null)
             {
-                throw new InvalidOperationException("File content not found.");
+                return null;
             }
 
-            return (content, file.ContentType.Value);
+            using var image = Image.Load(content);
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Size = new Size(100, 100),
+                Mode = ResizeMode.Crop
+            }));
+
+            using var ms = new MemoryStream();
+            await image.SaveAsJpegAsync(ms, cancellationToken);
+            return ms.ToArray();
+        }
+        else if (file.ContentType.IsVideo)
+        {
+            var content = await DownloadFileAsync(fileId, userId ?? file.OwnerId, cancellationToken);
+            if (content == null)
+            {
+                return null;
+            }
+
+            var tempVideoPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.{file.ContentType.SubType}");
+            var tempThumbnailPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
+
+            try
+            {
+                await File.WriteAllBytesAsync(tempVideoPath, content, cancellationToken);
+
+                await FFMpegArguments
+                    .FromFileInput(tempVideoPath)
+                    .OutputToFile(tempThumbnailPath, true, options => options
+                        .Seek(TimeSpan.FromSeconds(1))
+                        .WithVideoFilters(filterOptions => filterOptions.Scale(100, 100))
+                        .WithFrameOutputCount(1))
+                    .ProcessAsynchronously();
+
+                if (File.Exists(tempThumbnailPath))
+                {
+                    return await File.ReadAllBytesAsync(tempThumbnailPath, cancellationToken);
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            finally
+            {
+                if (File.Exists(tempVideoPath))
+                    File.Delete(tempVideoPath);
+                if (File.Exists(tempThumbnailPath))
+                    File.Delete(tempThumbnailPath);
+            }
         }
 
-        throw new NotImplementedException("Preview generation for non-image files is not supported.");
+        return null;
     }
+
+
 
     public async Task UpdateTagsAsync(Guid fileId, Guid userId, List<string> tagNames, CancellationToken cancellationToken)
     {
@@ -439,6 +466,119 @@ public class FileService
         var files = await _fileRepository.GetFavoritesByUserIdAsync(userId, cancellationToken);
         return files.Select(f => MapToDto(f, userId)).ToList();
     }
+
+    public async Task<FileDto?> GetFileByPublicTokenAsync(string token, string? password, CancellationToken cancellationToken)
+    {
+        var file = await _fileRepository.GetByPublicTokenAsync(token, cancellationToken);
+        if (file == null)
+        {
+            return null;
+        }
+
+        var publicLink = file.PublicLinks.FirstOrDefault(pl => pl.Token == token && pl.IsActive);
+        if (publicLink == null)
+        {
+            return null;
+        }
+
+        return MapToDto(file);
+    }
+
+    public async Task<byte[]?> DownloadFileByPublicTokenAsync(string token, string? password, CancellationToken cancellationToken)
+    {
+        var file = await _fileRepository.GetByPublicTokenAsync(token, cancellationToken);
+        if (file == null)
+        {
+            return null;
+        }
+
+        var publicLink = file.PublicLinks.FirstOrDefault(pl => pl.Token == token && pl.IsActive);
+        if (publicLink == null)
+        {
+            return null;
+        }
+
+        return file.CurrentVersion.Content;
+    }
+
+    public async Task<byte[]?> GetThumbnailByPublicTokenAsync(string token, string? password, CancellationToken cancellationToken)
+    {
+        var file = await _fileRepository.GetByPublicTokenAsync(token, cancellationToken);
+        if (file == null)
+        {
+            return null;
+        }
+
+        var publicLink = file.PublicLinks.FirstOrDefault(pl => pl.Token == token && pl.IsActive);
+        if (publicLink == null)
+        {
+            return null;
+        }
+
+        if (file.ContentType.IsImage)
+        {
+            var content = file.CurrentVersion.Content;
+            if (content == null)
+            {
+                return null;
+            }
+
+            using var image = Image.Load(content);
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Size = new Size(100, 100),
+                Mode = ResizeMode.Crop
+            }));
+
+            using var ms = new MemoryStream();
+            await image.SaveAsJpegAsync(ms, cancellationToken);
+            return ms.ToArray();
+        }
+        else if (file.ContentType.IsVideo)
+        {
+            var content = file.CurrentVersion.Content;
+            if (content == null)
+            {
+                return null;
+            }
+
+            var tempVideoPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.{file.ContentType.SubType}");
+            var tempThumbnailPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
+
+            try
+            {
+                await File.WriteAllBytesAsync(tempVideoPath, content, cancellationToken);
+
+                await FFMpegArguments
+                    .FromFileInput(tempVideoPath)
+                    .OutputToFile(tempThumbnailPath, true, options => options
+                        .Seek(TimeSpan.FromSeconds(1))
+                        .WithVideoFilters(filterOptions => filterOptions.Scale(100, 100))
+                        .WithFrameOutputCount(1))
+                    .ProcessAsynchronously();
+
+                if (File.Exists(tempThumbnailPath))
+                {
+                    return await File.ReadAllBytesAsync(tempThumbnailPath, cancellationToken);
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            finally
+            {
+                if (File.Exists(tempVideoPath))
+                    File.Delete(tempVideoPath);
+                if (File.Exists(tempThumbnailPath))
+                    File.Delete(tempThumbnailPath);
+            }
+        }
+
+        return null;
+    }
+
+
 
     private static FileDto MapToDto(DriveFile file, Guid? currentUserId = null)
     {
