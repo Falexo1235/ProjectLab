@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# 
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoobleDrive.Api", "BoobleDrive.Api\BoobleDrive.Api.csproj", "{6B57D776-6DEA-4C6F-9E63-8222B0DC44F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoobleDrive.Application", "BoobleDrive.Application\BoobleDrive.Application.csproj", "{9969A8BF-4485-4376-A4E9-424DC31EDF76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoobleDrive.Domain", "BoobleDrive.Domain\BoobleDrive.Domain.csproj", "{F6AEF78A-5066-4CEA-9D37-03000C48B63C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoobleDrive.Infrastructure", "BoobleDrive.Infrastructure\BoobleDrive.Infrastructure.csproj", "{E858A3DE-1287-4CFC-A6ED-90185D342730}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6B57D776-6DEA-4C6F-9E63-8222B0DC44F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B57D776-6DEA-4C6F-9E63-8222B0DC44F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B57D776-6DEA-4C6F-9E63-8222B0DC44F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B57D776-6DEA-4C6F-9E63-8222B0DC44F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9969A8BF-4485-4376-A4E9-424DC31EDF76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9969A8BF-4485-4376-A4E9-424DC31EDF76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9969A8BF-4485-4376-A4E9-424DC31EDF76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9969A8BF-4485-4376-A4E9-424DC31EDF76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6AEF78A-5066-4CEA-9D37-03000C48B63C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6AEF78A-5066-4CEA-9D37-03000C48B63C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6AEF78A-5066-4CEA-9D37-03000C48B63C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6AEF78A-5066-4CEA-9D37-03000C48B63C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E858A3DE-1287-4CFC-A6ED-90185D342730}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E858A3DE-1287-4CFC-A6ED-90185D342730}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E858A3DE-1287-4CFC-A6ED-90185D342730}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E858A3DE-1287-4CFC-A6ED-90185D342730}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
