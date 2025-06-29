@@ -305,7 +305,10 @@ public class FileService
             throw new UnauthorizedAccessException("Access denied or file not found.");
         }
 
-        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+            .Replace('/', '-')
+            .Replace('+', '_')
+            .TrimEnd('=');
         var link = new PublicLink
         {
             FileId = fileId,
