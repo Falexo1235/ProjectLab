@@ -52,8 +52,8 @@ function App() {
         modifiedDate: f.updatedAt || f.createdAt,
         isFavorite: f.isFavorite || false,
         tags: f.tags || [],
-        url: `http://localhost:5107/api/v1/Files/${f.id}/download`,
-        thumbnail: `http://localhost:5107/api/v1/Thumbnail/${f.id}`,
+        url: getApiUrl(`/api/v1/Files/${f.id}/download`),
+        thumbnail: getApiUrl(`/api/v1/Thumbnail/${f.id}`),
       }))
       setFiles(files)
     } catch (e) {
